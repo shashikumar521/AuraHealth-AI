@@ -1,0 +1,6 @@
+{
+  "name": "Clinical Decision Support System (Bayesian & P-Value)",
+  "description": "Hospital-grade Clinical Decision Support System (CDSS) for Disease Prediction using Bayesian Belief Networks and inferential P-Value Hypothesis Testing with Chi-Square contingency analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
