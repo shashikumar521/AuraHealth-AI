@@ -34,6 +34,9 @@ const DEFAULT_PROFILE: AuraPatientProfile = {
   heightCm: 172,
   gender: 'Female',
   smoking: 'Former / Occasional',
+  physicalActivity: 'Sedentary (Low Activity)',
+  sleepQuality: 'Normal restful sleep',
+  peripheralEdema: 'Swelling in ankles/feet after sitting or walking',
   familyHistory: true,
   chestSensation: 'Mild dull ache',
   breathingEffort: 'Short of breath during mild walks',
@@ -82,6 +85,18 @@ export default function App() {
     [profile.weightKg, profile.heightCm, profile.age]
   );
 
+  // Metabolic age calculation
+  const calculatedMetabolicAge = useMemo(() => {
+    let delta = 0;
+    if (bmiInfo.bmi >= 30) delta += 4;
+    else if (bmiInfo.bmi >= 25) delta += 2;
+    if (profile.smoking === 'Active Daily Smoker') delta += 5;
+    else if (profile.smoking === 'Former / Occasional') delta += 2;
+    if (profile.physicalActivity === 'Sedentary (Low Activity)') delta += 3;
+    if (profile.sleepQuality.includes('Possible Sleep Apnea')) delta += 3;
+    return profile.age + delta;
+  }, [profile, bmiInfo]);
+
   const handleRunAssessment = () => {
     setShowEvaluatedNotice(true);
     setTimeout(() => setShowEvaluatedNotice(false), 2400);
@@ -92,7 +107,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#1E293B] antialiased flex flex-col selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen bg-[#0B132B] text-slate-100 antialiased flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Top Navigation */}
       <AuraHeader
         activeTab={activeTab}
@@ -117,16 +132,16 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleRunAssessment}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold rounded-2xl shadow-xs transition-all cursor-pointer hover:shadow-sm"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-slate-950 text-xs font-bold rounded-2xl shadow-lg shadow-cyan-500/25 transition-all cursor-pointer hover:shadow-cyan-500/40"
               >
-                <Sparkles className="w-4 h-4 text-blue-200" />
-                <span>Run Clinical Assessment</span>
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                <span>Run Bayesian Assessment</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               {showEvaluatedNotice && (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-800 transition-all">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-xs text-emerald-300 transition-all">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>
                     Exact Bayesian posterior &amp; &chi;&sup2; models updated in real time!
                   </span>
@@ -134,28 +149,31 @@ export default function App() {
               )}
             </div>
 
-            {/* Right Column: Competition-Winning Clinical Intelligence Dashboard (Cols 5-12) */}
+            {/* Right Column: Clinical Intelligence Dashboard (Cols 5-12) */}
             <div className="lg:col-span-8 space-y-6">
               {/* 1. Executive Brief Header */}
-              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="bg-slate-900/60 backdrop-blur-md border border-cyan-500/20 rounded-2xl p-5 shadow-xl shadow-black/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider font-mono">
-                    Executive Health Brief
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest font-mono">
+                    AURA AI CLINICAL SYNTHESIS
                   </span>
-                  <h2 className="text-lg font-semibold text-[#1E293B] mt-0.5">
+                  <h2 className="text-lg font-bold text-white mt-0.5">
                     Patient Intelligence: {profile.name || 'Anonymous Patient'}
                   </h2>
-                  <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-[#64748B]">
-                    <span className="px-2 py-0.5 bg-white border border-[#E2E8F0] rounded-md font-medium text-slate-700">
-                      {profile.age} yrs &middot; {profile.gender}
+                  <p className="text-xs text-slate-400 mt-1">
+                    Chronological Age: <strong className="text-white">{profile.age} yrs</strong> &middot; Calculated Metabolic Age: <strong className="text-cyan-400">{calculatedMetabolicAge} yrs</strong>
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-300">
+                    <span className="px-2.5 py-0.5 bg-slate-800/80 border border-slate-700 rounded-md font-medium text-slate-200">
+                      {profile.gender}
                     </span>
-                    <span className="px-2 py-0.5 bg-white border border-[#E2E8F0] rounded-md font-medium text-slate-700">
+                    <span className="px-2.5 py-0.5 bg-slate-800/80 border border-slate-700 rounded-md font-medium text-slate-200">
                       BMI: {bmiInfo.bmi} ({bmiInfo.category})
                     </span>
-                    <span className="px-2 py-0.5 bg-white border border-[#E2E8F0] rounded-md font-medium text-slate-700">
-                      {profile.smoking}
+                    <span className="px-2.5 py-0.5 bg-slate-800/80 border border-slate-700 rounded-md font-medium text-slate-200">
+                      {profile.physicalActivity.split('/')[0]}
                     </span>
-                    <span className="px-2 py-0.5 bg-white border border-[#E2E8F0] rounded-md font-medium text-slate-700">
+                    <span className="px-2.5 py-0.5 bg-slate-800/80 border border-slate-700 rounded-md font-medium text-slate-200">
                       Genetics: {profile.familyHistory ? 'Positive (+)' : 'Negative (-)'}
                     </span>
                   </div>
@@ -164,14 +182,14 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsReportOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl border border-[#E2E8F0] shadow-2xs transition-colors shrink-0 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-cyan-500/20 shadow-sm transition-all shrink-0 cursor-pointer"
                 >
-                  <FileDown className="w-4 h-4 text-blue-600" />
-                  <span>Download Brief</span>
+                  <FileDown className="w-4 h-4 text-cyan-400" />
+                  <span>Download Dossier</span>
                 </button>
               </div>
 
-              {/* 2. Animated Circular Radial Gauges */}
+              {/* 2. Holographic Circular Radial Gauges */}
               <AuraGauges
                 heartRisk={heartRisk}
                 diabetesRisk={diabetesRisk}
@@ -191,12 +209,12 @@ export default function App() {
               <AuraActionableGuidance recommendations={actionableRecommendations} />
 
               {/* 6. Professional Clinical Disclaimer */}
-              <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex items-start gap-3 text-xs text-amber-900 leading-relaxed">
-                <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="p-4 bg-slate-900/60 border-l-3 border-cyan-400 rounded-r-2xl flex items-start gap-3 text-xs text-slate-400 leading-relaxed shadow-lg">
+                <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold text-amber-950">Clinical Governance &amp; Compliance Notice:</span>
-                  <p className="mt-0.5 text-amber-900/90 font-normal">
-                    AuraHealth AI computes statistical likelihood approximations through Bayesian variable elimination and Chi-Square contingency testing. This platform is engineered for clinical decision support, academic demonstration, and health risk awareness. It does not replace formal individualized medical consultation or diagnostic laboratory examinations.
+                  <span className="font-semibold text-white">Clinical Governance &amp; Compliance Notice:</span>
+                  <p className="mt-0.5 text-slate-300 font-normal">
+                    AuraHealth Nexus computes statistical likelihood approximations through Bayesian variable elimination and Chi-Square contingency testing. This platform is engineered for clinical decision support, academic demonstration, and health risk awareness. It does not replace formal individualized medical consultation or diagnostic laboratory examinations.
                   </p>
                 </div>
               </div>

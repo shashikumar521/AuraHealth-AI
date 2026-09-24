@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal, Copy, Check, Download, Code } from 'lucide-react';
+import { Terminal, Copy, Check, Download, Code, Dna } from 'lucide-react';
 
 interface PythonScriptTabProps {
   pythonCode: string;
@@ -35,18 +35,18 @@ export const PythonScriptTab: React.FC<PythonScriptTabProps> = ({ pythonCode }) 
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
+    <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-cyan-500/20 p-6 shadow-xl shadow-black/30 space-y-4 text-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-cyan-500/20 gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
-              <Code className="w-4 h-4" />
+            <span className="p-1.5 bg-cyan-500/15 text-cyan-400 rounded-lg border border-cyan-500/30">
+              <Dna className="w-4 h-4" />
             </span>
-            <h3 className="font-medium text-[#1E293B] text-base">
-              AuraHealth AI Standalone Python Engine (Streamlit + pgmpy + NetworkX + scipy.stats)
+            <h3 className="font-semibold text-white text-base">
+              AuraHealth Nexus Standalone Python Engine (Streamlit + pgmpy + NetworkX + scipy.stats)
             </h3>
           </div>
-          <p className="text-xs font-normal text-[#64748B] mt-1">
+          <p className="text-xs font-normal text-slate-400 mt-1">
             Run the exact same multi-variable Bayesian Belief Network, NetworkX DAG visualizer, and Chi-Square engine locally in your Python environment.
           </p>
         </div>
@@ -54,14 +54,14 @@ export const PythonScriptTab: React.FC<PythonScriptTabProps> = ({ pythonCode }) 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl border border-[#E2E8F0] shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 shadow-sm transition-colors cursor-pointer"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
             <span>{copied ? 'Code Copied!' : 'Copy Code'}</span>
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-slate-950 text-xs font-bold rounded-xl shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download app.py</span>
@@ -69,45 +69,34 @@ export const PythonScriptTab: React.FC<PythonScriptTabProps> = ({ pythonCode }) 
         </div>
       </div>
 
-      {/* Terminal Command Box */}
-      <div className="bg-[#1E293B] rounded-xl p-4 text-slate-100 font-mono text-xs shadow-inner">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-700 text-slate-400">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[11px] font-normal text-slate-300">Terminal Install &amp; Launch</span>
-          </div>
+      {/* Terminal Quick Start */}
+      <div className="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-mono font-semibold text-cyan-400 flex items-center gap-1.5">
+            <Terminal className="w-3.5 h-3.5" />
+            <span>TERMINAL ONE-LINER SETUP</span>
+          </span>
           <button
             onClick={handleCopyCmd}
-            className="text-[11px] hover:text-white flex items-center gap-1 text-slate-400 cursor-pointer"
+            className="text-[11px] text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
           >
             {copiedCmd ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-            <span>{copiedCmd ? 'Copied' : 'Copy'}</span>
+            <span>{copiedCmd ? 'Copied' : 'Copy command'}</span>
           </button>
         </div>
-        <div className="space-y-1.5">
-          <div>
-            <span className="text-slate-400 font-normal"># 1. Install dependencies</span>
-          </div>
-          <div className="text-emerald-300 font-mono select-all">
-            {installCmd}
-          </div>
-          <div className="pt-1">
-            <span className="text-slate-400 font-normal"># 2. Run the Streamlit web application</span>
-          </div>
-          <div className="text-blue-300 font-mono select-all">
-            {runCmd}
-          </div>
-        </div>
+        <pre className="text-xs font-mono text-cyan-300/90 overflow-x-auto whitespace-pre-wrap select-all bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+          {installCmd} && {runCmd}
+        </pre>
       </div>
 
-      {/* Code Viewer Container */}
-      <div className="relative border border-[#E2E8F0] rounded-xl overflow-hidden">
-        <div className="bg-[#F8FAFC] px-4 py-2 border-b border-[#E2E8F0] flex items-center justify-between">
-          <span className="text-xs font-mono text-slate-600">app.py</span>
-          <span className="text-[11px] text-slate-400 font-mono">Streamlit + pgmpy + NetworkX</span>
+      {/* Code Viewer */}
+      <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-[#070D1E]">
+        <div className="px-4 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <span>app.py (Executable Python Code)</span>
+          <span>UTF-8 &middot; Python 3.9+</span>
         </div>
-        <pre className="p-4 bg-white text-slate-700 font-mono text-xs overflow-x-auto max-h-96 leading-relaxed">
-          {pythonCode}
+        <pre className="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-[550px] leading-relaxed selection:bg-cyan-900 selection:text-cyan-100">
+          <code>{pythonCode}</code>
         </pre>
       </div>
     </div>

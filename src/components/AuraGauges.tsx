@@ -24,28 +24,28 @@ const RadialGauge: React.FC<RadialGaugeProps> = ({ title, subtitle, icon, risk }
   const strokeDashoffset = arcLength - (arcLength * percentage) / 100;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs relative overflow-hidden transition-all hover:shadow-sm">
+    <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-cyan-500/15 p-6 shadow-xl shadow-black/25 relative overflow-hidden transition-all hover:border-cyan-500/35">
       {/* Background Soft Glow Accent */}
       <div
-        className="absolute -top-12 -right-12 w-36 h-36 rounded-full opacity-20 blur-2xl pointer-events-none"
+        className="absolute -top-12 -right-12 w-36 h-36 rounded-full opacity-15 blur-2xl pointer-events-none"
         style={{ backgroundColor: risk.ringColor }}
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+      <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800">
         <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-xl bg-slate-50 text-slate-700 border border-slate-200">
+          <span className="p-1.5 rounded-xl bg-slate-800/80 text-cyan-400 border border-slate-700/80">
             {icon}
           </span>
           <div>
-            <h3 className="font-medium text-[#1E293B] text-sm">{title}</h3>
-            <p className="text-[11px] text-[#64748B]">{subtitle}</p>
+            <h3 className="font-semibold text-white text-sm">{title}</h3>
+            <p className="text-[11px] text-slate-400">{subtitle}</p>
           </div>
         </div>
 
-        {/* Risk Badge with exact user gradients */}
+        {/* Risk Badge with Cyber Blue / Dark Slate styling */}
         <span
-          className="text-xs font-medium px-3 py-1 rounded-full border shadow-2xs transition-colors"
+          className="text-xs font-semibold px-3 py-1 rounded-full border shadow-sm transition-colors"
           style={{
             backgroundColor: risk.badgeBg,
             borderColor: risk.badgeBorder,
@@ -66,7 +66,7 @@ const RadialGauge: React.FC<RadialGaugeProps> = ({ title, subtitle, icon, risk }
               cy="80"
               r={radius}
               fill="none"
-              stroke="#F1F5F9"
+              stroke="rgba(30, 41, 59, 0.8)"
               strokeWidth={strokeWidth}
               strokeDasharray={arcLength}
               strokeLinecap="round"
@@ -83,6 +83,7 @@ const RadialGauge: React.FC<RadialGaugeProps> = ({ title, subtitle, icon, risk }
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               className="transition-all duration-700 ease-out"
+              style={{ filter: `drop-shadow(0 0 6px ${risk.ringColor})` }}
             />
           </svg>
 
@@ -94,7 +95,7 @@ const RadialGauge: React.FC<RadialGaugeProps> = ({ title, subtitle, icon, risk }
             >
               {percentage.toFixed(1)}%
             </span>
-            <span className="text-[11px] font-normal text-slate-500 uppercase tracking-wider mt-0.5">
+            <span className="text-[11px] font-normal text-slate-400 uppercase tracking-wider mt-0.5 font-mono">
               Posterior Risk
             </span>
           </div>
@@ -109,13 +110,13 @@ const RadialGauge: React.FC<RadialGaugeProps> = ({ title, subtitle, icon, risk }
       </div>
 
       {/* Clinical Interpretation Card */}
-      <div className="mt-1 pt-3 border-t border-slate-100 flex items-start gap-2.5">
+      <div className="mt-1 pt-3 border-t border-slate-800/80 flex items-start gap-2.5">
         {percentage < 25 ? (
-          <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
         ) : (
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         )}
-        <p className="text-xs font-normal text-[#64748B] leading-relaxed">
+        <p className="text-xs font-normal text-slate-300 leading-relaxed">
           {risk.summary}
         </p>
       </div>
@@ -129,13 +130,13 @@ export const AuraGauges: React.FC<AuraGaugesProps> = ({ heartRisk, diabetesRisk 
       <RadialGauge
         title="Coronary Heart Disease"
         subtitle="Bayesian Inferred Posterior Probability"
-        icon={<Heart className="w-4 h-4 text-rose-500" />}
+        icon={<Heart className="w-4 h-4 text-rose-400" />}
         risk={heartRisk}
       />
       <RadialGauge
         title="Type-2 Diabetes Mellitus"
         subtitle="Bayesian Inferred Posterior Probability"
-        icon={<Activity className="w-4 h-4 text-teal-600" />}
+        icon={<Activity className="w-4 h-4 text-cyan-400" />}
         risk={diabetesRisk}
       />
     </div>

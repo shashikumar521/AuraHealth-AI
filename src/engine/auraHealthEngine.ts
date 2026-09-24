@@ -10,6 +10,9 @@ export interface CohortPatientRecord {
   Sex: 'Male' | 'Female';
   Weight_BMI: 'Underweight' | 'Healthy Weight' | 'Overweight' | 'Obese';
   Smoking: 'Non-Smoker' | 'Former / Occasional' | 'Active Daily Smoker';
+  Physical_Activity: 'Active / Regular Exercise' | 'Sedentary (Low Activity)';
+  Sleep_Apnea: 'Normal restful sleep' | 'Frequent snoring / Waking with breathlessness (Possible Sleep Apnea)';
+  Peripheral_Edema: 'No swelling' | 'Swelling in ankles/feet after sitting or walking';
   Family_History: 'No' | 'Yes';
   Blood_Pressure: 'Normal' | 'Pre-hypertension' | 'Diagnosed High';
   Glucose: 'Normal' | 'Elevated' | 'Diabetic';
@@ -26,7 +29,7 @@ export interface CohortPatientRecord {
 export function getBenchmarkWeightForAge(age: number): number {
   if (age <= 25) return 62;
   if (age <= 40) return 71;
-  if (age <= 60) return 76;
+  if (age <= 60) return 77;
   return 72;
 }
 
@@ -39,20 +42,20 @@ export function computeBmi(weightKg: number, heightCm: number = 172, age: number
   const bmi = Math.round(bmiRaw * 10) / 10;
 
   let category: 'Underweight' | 'Healthy Weight' | 'Overweight' | 'Obese' = 'Healthy Weight';
-  let badgeColor = 'bg-teal-50 text-teal-700 border-teal-200';
+  let badgeColor = 'bg-teal-500/10 text-teal-300 border-teal-500/30';
 
   if (bmi < 18.5) {
     category = 'Underweight';
-    badgeColor = 'bg-sky-50 text-sky-700 border-sky-200';
+    badgeColor = 'bg-blue-500/10 text-blue-300 border-blue-500/30';
   } else if (bmi < 25.0) {
     category = 'Healthy Weight';
-    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    badgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
   } else if (bmi < 30.0) {
     category = 'Overweight';
-    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+    badgeColor = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
   } else {
     category = 'Obese';
-    badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
+    badgeColor = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
   }
 
   return {
@@ -75,9 +78,9 @@ class SeededLcg {
 }
 
 /**
- * Generates 2,000 synthetic patient records according to real clinical Bayesian distributions
+ * Generates 2,500 synthetic patient records according to real clinical Bayesian distributions
  */
-export function generateCohort(n: number = 2000): CohortPatientRecord[] {
+export function generateCohort(n: number = 2500): CohortPatientRecord[] {
   const lcg = new SeededLcg(777);
   const records: CohortPatientRecord[] = [];
 
@@ -94,48 +97,59 @@ export function generateCohort(n: number = 2000): CohortPatientRecord[] {
   for (let i = 0; i < n; i++) {
     const ageGroup = sample<CohortPatientRecord['Age_Group']>(
       ['18-25', '26-40', '41-60', '61+'],
-      [0.17, 0.33, 0.32, 0.18]
+      [0.14, 0.32, 0.34, 0.20]
     );
 
-    const sex = lcg.next() < 0.49 ? 'Male' : 'Female';
+    const sex = lcg.next() < 0.50 ? 'Male' : 'Female';
 
     const weightBmi = sample<CohortPatientRecord['Weight_BMI']>(
       ['Underweight', 'Healthy Weight', 'Overweight', 'Obese'],
-      [0.05, 0.44, 0.33, 0.18]
+      [0.05, 0.43, 0.34, 0.18]
     );
 
     const smoking = sample<CohortPatientRecord['Smoking']>(
       ['Non-Smoker', 'Former / Occasional', 'Active Daily Smoker'],
-      [0.58, 0.23, 0.19]
+      [0.55, 0.25, 0.20]
+    );
+
+    const activity = sample<CohortPatientRecord['Physical_Activity']>(
+      ['Active / Regular Exercise', 'Sedentary (Low Activity)'],
+      [0.58, 0.42]
+    );
+
+    const sleepApnea = sample<CohortPatientRecord['Sleep_Apnea']>(
+      ['Normal restful sleep', 'Frequent snoring / Waking with breathlessness (Possible Sleep Apnea)'],
+      [0.72, 0.28]
     );
 
     const famHist = sample<CohortPatientRecord['Family_History']>(
       ['No', 'Yes'],
-      [0.68, 0.32]
+      [0.65, 0.35]
     );
 
     // Blood Pressure
     let pHighBP = 0.08;
     if (ageGroup === '41-60') pHighBP += 0.16;
-    if (ageGroup === '61+') pHighBP += 0.34;
-    if (weightBmi === 'Overweight') pHighBP += 0.14;
-    if (weightBmi === 'Obese') pHighBP += 0.28;
-    if (smoking === 'Active Daily Smoker') pHighBP += 0.15;
-    pHighBP = Math.min(Math.max(pHighBP, 0.04), 0.85);
+    if (ageGroup === '61+') pHighBP += 0.32;
+    if (weightBmi === 'Overweight') pHighBP += 0.12;
+    if (weightBmi === 'Obese') pHighBP += 0.26;
+    if (smoking === 'Active Daily Smoker') pHighBP += 0.16;
+    if (sleepApnea.includes('Possible Sleep Apnea')) pHighBP += 0.18;
+    pHighBP = Math.min(Math.max(pHighBP, 0.04), 0.88);
 
     const bp = sample<CohortPatientRecord['Blood_Pressure']>(
       ['Normal', 'Pre-hypertension', 'Diagnosed High'],
-      [(1 - pHighBP) * 0.68, (1 - pHighBP) * 0.32, pHighBP]
+      [(1 - pHighBP) * 0.65, (1 - pHighBP) * 0.35, pHighBP]
     );
 
     // Glucose
-    let pHighGlucose = 0.07;
-    if (ageGroup === '41-60') pHighGlucose += 0.12;
-    if (ageGroup === '61+') pHighGlucose += 0.22;
-    if (weightBmi === 'Overweight') pHighGlucose += 0.15;
-    if (weightBmi === 'Obese') pHighGlucose += 0.32;
+    let pHighGlucose = 0.06;
+    if (ageGroup === '41-60' || ageGroup === '61+') pHighGlucose += 0.18;
+    if (weightBmi === 'Overweight') pHighGlucose += 0.14;
+    if (weightBmi === 'Obese') pHighGlucose += 0.34;
     if (famHist === 'Yes') pHighGlucose += 0.18;
-    pHighGlucose = Math.min(Math.max(pHighGlucose, 0.03), 0.84);
+    if (activity === 'Sedentary (Low Activity)') pHighGlucose += 0.10;
+    pHighGlucose = Math.min(Math.max(pHighGlucose, 0.03), 0.88);
 
     const glucose = sample<CohortPatientRecord['Glucose']>(
       ['Normal', 'Elevated', 'Diabetic'],
@@ -144,58 +158,69 @@ export function generateCohort(n: number = 2000): CohortPatientRecord[] {
 
     // Type 2 Diabetes probability
     let pDiab = 0.04;
-    if (glucose === 'Elevated') pDiab += 0.28;
-    if (glucose === 'Diabetic') pDiab += 0.65;
-    if (weightBmi === 'Overweight') pDiab += 0.09;
-    if (weightBmi === 'Obese') pDiab += 0.22;
-    if (famHist === 'Yes') pDiab += 0.14;
-    pDiab = Math.min(Math.max(pDiab, 0.02), 0.92);
+    if (glucose === 'Elevated') pDiab += 0.30;
+    if (glucose === 'Diabetic') pDiab += 0.68;
+    if (weightBmi === 'Obese') pDiab += 0.20;
+    if (famHist === 'Yes') pDiab += 0.15;
+    pDiab = Math.min(Math.max(pDiab, 0.02), 0.94);
     const diabetesRisk: 'Low' | 'High' = lcg.next() < pDiab ? 'High' : 'Low';
 
     // Coronary Heart Disease probability
     let pHeart = 0.05;
-    if (sex === 'Male') pHeart += 0.07;
-    if (smoking === 'Former / Occasional') pHeart += 0.08;
-    if (smoking === 'Active Daily Smoker') pHeart += 0.26;
-    if (bp === 'Pre-hypertension') pHeart += 0.11;
-    if (bp === 'Diagnosed High') pHeart += 0.28;
-    if (diabetesRisk === 'High') pHeart += 0.24;
-    if (famHist === 'Yes') pHeart += 0.12;
+    if (sex === 'Male') pHeart += 0.08;
+    if (smoking === 'Former / Occasional') pHeart += 0.09;
+    if (smoking === 'Active Daily Smoker') pHeart += 0.28;
+    if (bp === 'Pre-hypertension') pHeart += 0.12;
+    if (bp === 'Diagnosed High') pHeart += 0.29;
+    if (diabetesRisk === 'High') pHeart += 0.25;
+    if (famHist === 'Yes') pHeart += 0.14;
     if (ageGroup === '41-60') pHeart += 0.10;
-    if (ageGroup === '61+') pHeart += 0.22;
-    pHeart = Math.min(Math.max(pHeart, 0.03), 0.90);
+    if (ageGroup === '61+') pHeart += 0.24;
+    if (activity === 'Sedentary (Low Activity)') pHeart += 0.08;
+    if (sleepApnea.includes('Possible Sleep Apnea')) pHeart += 0.12;
+    pHeart = Math.min(Math.max(pHeart, 0.03), 0.92);
     const heartRisk: 'Low' | 'High' = lcg.next() < pHeart ? 'High' : 'Low';
 
     // Observable symptoms
     const chest = heartRisk === 'High'
       ? sample<CohortPatientRecord['Chest_Pain']>(
           ['No discomfort', 'Mild dull ache', 'Sharp / Tight angina pressure'],
-          [0.22, 0.43, 0.35]
+          [0.18, 0.38, 0.44]
         )
       : sample<CohortPatientRecord['Chest_Pain']>(
           ['No discomfort', 'Mild dull ache', 'Sharp / Tight angina pressure'],
-          [0.86, 0.11, 0.03]
+          [0.87, 0.10, 0.03]
         );
 
     const dyspnea = heartRisk === 'High'
       ? sample<CohortPatientRecord['Dyspnea']>(
           ['Easy & normal', 'Short of breath during mild walks', 'Breathless at rest'],
-          [0.25, 0.47, 0.28]
+          [0.20, 0.48, 0.32]
         )
       : sample<CohortPatientRecord['Dyspnea']>(
           ['Easy & normal', 'Short of breath during mild walks', 'Breathless at rest'],
-          [0.85, 0.13, 0.02]
+          [0.86, 0.12, 0.02]
         );
 
     const hasFatigueRisk = heartRisk === 'High' || diabetesRisk === 'High';
     const fatigue = hasFatigueRisk
       ? sample<CohortPatientRecord['Fatigue']>(
           ['High / Normal energy', 'Chronic fatigue / Easily exhausted'],
-          [0.26, 0.74]
+          [0.24, 0.76]
         )
       : sample<CohortPatientRecord['Fatigue']>(
           ['High / Normal energy', 'Chronic fatigue / Easily exhausted'],
-          [0.83, 0.17]
+          [0.84, 0.16]
+        );
+
+    const edema = heartRisk === 'High' || bp === 'Diagnosed High'
+      ? sample<CohortPatientRecord['Peripheral_Edema']>(
+          ['No swelling', 'Swelling in ankles/feet after sitting or walking'],
+          [0.38, 0.62]
+        )
+      : sample<CohortPatientRecord['Peripheral_Edema']>(
+          ['No swelling', 'Swelling in ankles/feet after sitting or walking'],
+          [0.91, 0.09]
         );
 
     records.push({
@@ -203,6 +228,9 @@ export function generateCohort(n: number = 2000): CohortPatientRecord[] {
       Sex: sex,
       Weight_BMI: weightBmi,
       Smoking: smoking,
+      Physical_Activity: activity,
+      Sleep_Apnea: sleepApnea,
+      Peripheral_Edema: edema,
       Family_History: famHist,
       Blood_Pressure: bp,
       Glucose: glucose,
@@ -217,7 +245,7 @@ export function generateCohort(n: number = 2000): CohortPatientRecord[] {
   return records;
 }
 
-export const AURA_BASELINE_COHORT = generateCohort(2000);
+export const AURA_BASELINE_COHORT = generateCohort(2500);
 
 /**
  * Bayesian variable elimination algorithm with Dirichlet smoothing
@@ -240,6 +268,9 @@ export function calculateAuraBayesianRisk(profile: AuraPatientProfile): {
     Sex: profile.gender,
     Weight_BMI: bmiInfo.category,
     Smoking: profile.smoking,
+    Physical_Activity: profile.physicalActivity,
+    Sleep_Apnea: profile.sleepQuality,
+    Peripheral_Edema: profile.peripheralEdema,
     Family_History: profile.familyHistory ? 'Yes' : 'No',
     Chest_Pain: profile.chestSensation,
     Dyspnea: profile.breathingEffort,
@@ -321,7 +352,7 @@ function chiSquarePValue(chi2: number, dof: number = 1): number {
 }
 
 /**
- * Chi-Square P-Value Contingency Testing against the N=2,000 cohort
+ * Chi-Square P-Value Contingency Testing against the N=2,500 cohort
  */
 export function calculateStatisticalEvidence(profile: AuraPatientProfile): SymptomStatisticalEvidence[] {
   const items: SymptomStatisticalEvidence[] = [];
@@ -349,11 +380,25 @@ export function calculateStatisticalEvidence(profile: AuraPatientProfile): Sympt
       targetDisease: 'Coronary Heart Disease'
     },
     {
-      id: 'energy',
-      label: 'Energy & Stamina',
-      key: 'Fatigue',
-      val: profile.energyStamina,
+      id: 'edema',
+      label: 'Peripheral Edema',
+      key: 'Peripheral_Edema',
+      val: profile.peripheralEdema,
       targetDisease: 'Coronary Heart Disease'
+    },
+    {
+      id: 'sleep',
+      label: 'Sleep & Night Breathing',
+      key: 'Sleep_Apnea',
+      val: profile.sleepQuality,
+      targetDisease: 'Coronary Heart Disease'
+    },
+    {
+      id: 'activity',
+      label: 'Physical Activity Level',
+      key: 'Physical_Activity',
+      val: profile.physicalActivity,
+      targetDisease: 'Type-2 Diabetes'
     },
     {
       id: 'smoking',
@@ -403,6 +448,9 @@ export function calculateStatisticalEvidence(profile: AuraPatientProfile): Sympt
       item.val === 'No discomfort' ||
       item.val === 'Easy & normal' ||
       item.val === 'High / Normal energy' ||
+      item.val === 'No swelling' ||
+      item.val === 'Active / Regular Exercise' ||
+      item.val === 'Normal restful sleep' ||
       item.val === 'Non-Smoker' ||
       item.val === 'Healthy Weight' ||
       item.val === 'No' ||
@@ -463,8 +511,8 @@ export function calculateStatisticalEvidence(profile: AuraPatientProfile): Sympt
         ? `Statistically Significant Factor (p = ${pStr})`
         : `Incidental / Coincidental (p = ${pStr})`,
       explanation: isSignificant
-        ? 'Strong clinical proof linking this specific symptom to this risk category.'
-        : 'Weak statistical link; this may just be incidental background noise.',
+        ? 'Strong clinical proof linking this specific symptom to this risk category in cohort contingency analysis.'
+        : 'Weak statistical link; this finding likely represents benign variation or incidental noise.',
       targetDisease: item.targetDisease
     });
   }
@@ -473,43 +521,40 @@ export function calculateStatisticalEvidence(profile: AuraPatientProfile): Sympt
 }
 
 /**
- * Categorize into exact competition risk gradients
- * - Low Risk: Mint green gradient (from #ECFDF5 to #D1FAE5, text #065F46)
- * - Moderate Risk: Warm amber gradient (from #FFFBEB to #FEF3C7, text #92400E)
- * - Elevated Risk: Rose coral gradient (from #FFF1F2 to #FFE4E6, text #9F1239)
+ * Categorize into Cyber Blue / Dark Slate Risk Tiers
  */
 export function evaluateRiskTier(pct: number, title: string): RiskEvaluation {
   if (pct < 25.0) {
     return {
       percentage: pct,
       level: 'Low Risk',
-      gradientClass: 'from-[#ECFDF5] to-[#D1FAE5]',
-      badgeBg: '#ECFDF5',
-      badgeBorder: '#A7F3D0',
-      badgeText: '#065F46',
-      ringColor: '#0D9488',
+      gradientClass: 'from-cyan-950/40 to-slate-900/60',
+      badgeBg: 'rgba(72, 202, 228, 0.15)',
+      badgeBorder: 'rgba(72, 202, 228, 0.35)',
+      badgeText: '#48CAE4',
+      ringColor: '#48CAE4',
       summary: `Estimated biomarkers for ${title} fall well within baseline healthy tolerances. Regular aerobic routine and nutritious diet continue to protect these metrics.`
     };
   } else if (pct <= 50.0) {
     return {
       percentage: pct,
       level: 'Moderate Risk',
-      gradientClass: 'from-[#FFFBEB] to-[#FEF3C7]',
-      badgeBg: '#FFFBEB',
-      badgeBorder: '#FDE68A',
-      badgeText: '#92400E',
-      ringColor: '#D97706',
+      gradientClass: 'from-amber-950/30 to-slate-900/60',
+      badgeBg: 'rgba(245, 158, 11, 0.15)',
+      badgeBorder: 'rgba(245, 158, 11, 0.35)',
+      badgeText: '#FBBF24',
+      ringColor: '#F59E0B',
       summary: `Intermediate risk signals observed. Clinical guidelines recommend non-invasive lipid & glycemic screenings at your upcoming wellness exam.`
     };
   } else {
     return {
       percentage: pct,
       level: 'Elevated Risk',
-      gradientClass: 'from-[#FFF1F2] to-[#FFE4E6]',
-      badgeBg: '#FFF1F2',
-      badgeBorder: '#FECDD3',
-      badgeText: '#9F1239',
-      ringColor: '#E11D48',
+      gradientClass: 'from-rose-950/40 to-slate-900/60',
+      badgeBg: 'rgba(239, 68, 68, 0.15)',
+      badgeBorder: 'rgba(239, 68, 68, 0.35)',
+      badgeText: '#F87171',
+      ringColor: '#EF4444',
       summary: `Notable synergistic risk indicators detected. We strongly suggest scheduling an in-person diagnostic evaluation with your physician.`
     };
   }
@@ -537,6 +582,22 @@ export function generateActionableGuidance(
       title: 'Maintain Smoke-Free Progress',
       desc: 'Occasional inhalation still provokes vascular endothelial constriction. Zero-exposure strategies drastically reduce long-term coronary inflammation.',
       icon: 'ShieldCheck'
+    });
+  }
+
+  if (profile.sleepQuality.includes('Possible Sleep Apnea')) {
+    recommendations.push({
+      title: 'Polysomnography & Sleep Apnea Review',
+      desc: 'Frequent nocturnal snoring and breathlessness indicate potential obstructive sleep apnea (OSA). Continuous positive airway pressure (CPAP) or oral appliance therapy can relieve nightly cardiovascular hypoxemia.',
+      icon: 'Moon'
+    });
+  }
+
+  if (profile.peripheralEdema.includes('Swelling in ankles')) {
+    recommendations.push({
+      title: 'Venous & Hemodynamic Evaluation',
+      desc: 'Bilateral ankle edema suggests increased hydrostatic venous pressure or mild cardiac preload elevation. Discuss diagnostic echocardiography and electrolyte evaluation with your provider.',
+      icon: 'Activity'
     });
   }
 
@@ -584,13 +645,5 @@ export function generateActionableGuidance(
   }
 
   // Ensure exactly 3 items
-  if (recommendations.length < 3) {
-    recommendations.push({
-      title: 'Annual Comprehensive Biomarker Panel',
-      desc: 'Schedule an annual review including comprehensive metabolic panel (CMP), advanced lipid profile (ApoB/LDL-P), and blood pressure ambulatory telemetry.',
-      icon: 'ClipboardCheck'
-    });
-  }
-
   return recommendations.slice(0, 3);
 }

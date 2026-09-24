@@ -1,5 +1,8 @@
 export type BiologicalSex = 'Male' | 'Female';
 export type SmokingStatus = 'Non-Smoker' | 'Former / Occasional' | 'Active Daily Smoker';
+export type PhysicalActivity = 'Active / Regular Exercise' | 'Sedentary (Low Activity)';
+export type SleepQuality = 'Normal restful sleep' | 'Frequent snoring / Waking with breathlessness (Possible Sleep Apnea)';
+export type PeripheralEdema = 'No swelling' | 'Swelling in ankles/feet after sitting or walking';
 
 export type ChestSensation = 'No discomfort' | 'Mild dull ache' | 'Sharp / Tight angina pressure';
 export type BreathingEffort = 'Easy & normal' | 'Short of breath during mild walks' | 'Breathless at rest';
@@ -15,6 +18,9 @@ export interface AuraPatientProfile {
   heightCm: number;
   gender: BiologicalSex;
   smoking: SmokingStatus;
+  physicalActivity: PhysicalActivity;
+  sleepQuality: SleepQuality;
+  peripheralEdema: PeripheralEdema;
   familyHistory: boolean;
   chestSensation: ChestSensation;
   breathingEffort: BreathingEffort;

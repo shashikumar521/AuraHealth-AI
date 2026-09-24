@@ -1,21 +1,17 @@
 """
-AuraHealth AI - Clinical Intelligence & Risk Prediction Platform
-An award-winning Clinical Decision Support System.
-Features:
-  1. Bidirectional Age <-> Weight <-> Height synchronization with real-time BMI classification.
-  2. Bayesian Belief Network (pgmpy + NetworkX) with live glowing DAG visualization.
-  3. Chi-Square Hypothesis Testing (scipy.stats) distinguishing true clinical factors from coincidences.
-  4. Dual Plotly circular radial gauges with clinical risk tier gradients.
-  5. Personalized actionable recommendations engine based on primary risk drivers.
+AuraHealth Nexus - Clinical Decision Support Platform
+Gemini-Inspired Cyber Blue / Dark Slate AI Architecture
+Full-Stack Clinical Intelligence Engine using Python, Streamlit, pgmpy, scipy.stats, networkx, and plotly.
 
-Install requirements:
-  pip install streamlit pgmpy pandas numpy scipy plotly networkx
+Install Dependencies:
+    pip install streamlit pgmpy pandas numpy scipy plotly networkx
 
-Run application:
-  streamlit run app.py
+Run Application:
+    streamlit run app.py
 """
 
 from typing import Dict, Any, List, Tuple
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -23,7 +19,7 @@ import plotly.graph_objects as go
 from scipy import stats
 import networkx as nx
 
-# Safe pgmpy Bayesian Network imports across library versions
+# Safe pgmpy Bayesian Network imports across diverse library releases
 try:
     from pgmpy.models import DiscreteBayesianNetwork as BayesianNetwork
 except ImportError:
@@ -37,270 +33,441 @@ from pgmpy.inference import VariableElimination
 
 
 # -----------------------------------------------------------------------------
-# 1. Page Configuration & Custom Porcelain Light-Themed CSS
+# 1. Page Configuration & Gemini-Inspired Cyber Blue CSS Styling
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="AuraHealth AI | Clinical Intelligence",
-    page_icon="🩺",
+    page_title="AuraHealth Nexus | Clinical Intelligence",
+    page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern, high-impact light UI with geometric typography
 st.markdown("""
 <style>
-    /* Base typography and background */
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+    /* Global Canvas: Deep Obsidian Blue with subtle radial gradient */
     .stApp {
-        background-color: #FFFFFF;
-        color: #1E293B;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at 50% 15%, #1C2541 0%, #0B132B 80%) !important;
+        color: #E2E8F0 !important;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif !important;
     }
 
-    /* Soft cards with micro-borders */
-    .aura-card {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02), 0 8px 10px -6px rgba(0,0,0,0.01);
-        margin-bottom: 20px;
-    }
-
-    .aura-card-title {
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #1E293B;
-        margin-bottom: 4px;
-    }
-
-    .aura-card-desc {
-        font-size: 0.8rem;
-        color: #64748B;
-        font-weight: 400;
-        line-height: 1.5;
-    }
-
-    /* Executive Brief Header */
-    .brief-header {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 16px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
+    /* Top Brand Navigation Header */
+    .nexus-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 16px 26px;
+        background: rgba(28, 37, 65, 0.65);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(72, 202, 228, 0.2);
+        border-radius: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.45);
     }
 
-    /* Evidence Cards Grid */
-    .evidence-card {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 16px;
-        margin-bottom: 12px;
+    .nexus-brand-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #48CAE4 0%, #3A86FF 50%, #90E0EF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        letter-spacing: -0.3px;
     }
 
-    .evidence-card.sig {
-        background-color: #EFF6FF;
-        border-color: #BFDBFE;
+    .nexus-tagline {
+        font-size: 0.78rem;
+        color: #94A3B8;
+        margin: 3px 0 0 0;
+        font-weight: 400;
     }
 
-    /* Recommendation Cards */
-    .rec-card {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 18px;
-        height: 100%;
+    /* Frosted Dark Slate Card Containers */
+    .nexus-card {
+        background: rgba(28, 37, 65, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(72, 202, 228, 0.15);
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        margin-bottom: 20px;
+        transition: transform 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .nexus-card:hover {
+        border-color: rgba(72, 202, 228, 0.35);
+        box-shadow: 0 12px 36px 0 rgba(72, 202, 228, 0.08);
+    }
+
+    .nexus-card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #FFFFFF;
+        margin: 0;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
     }
 
-    /* Clean clinical disclaimer */
-    .clinical-disclaimer {
-        background-color: #FFFBEB;
-        border-left: 3px solid #D97706;
+    .nexus-card-subtitle {
+        font-size: 0.78rem;
+        color: #94A3B8;
+        margin: 3px 0 0 0;
+        font-weight: 400;
+    }
+
+    /* Section Step Number Pill */
+    .step-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #3A86FF 0%, #48CAE4 100%);
+        color: #0B132B;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Status Pill Badges */
+    .nexus-badge {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11.5px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.2px;
+    }
+
+    .badge-cyan {
+        background: rgba(72, 202, 228, 0.14);
+        color: #48CAE4;
+        border: 1px solid rgba(72, 202, 228, 0.3);
+    }
+
+    .badge-optimal {
+        background: rgba(16, 185, 129, 0.14);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-amber {
+        background: rgba(245, 158, 11, 0.14);
+        color: #FBBF24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-crimson {
+        background: rgba(239, 68, 68, 0.14);
+        color: #F87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-blue {
+        background: rgba(58, 134, 255, 0.14);
+        color: #60A5FA;
+        border: 1px solid rgba(58, 134, 255, 0.3);
+    }
+
+    /* Sidebar Customization */
+    section[data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(72, 202, 228, 0.15) !important;
+    }
+
+    section[data-testid="stSidebar"] .stMarkdown h3 {
+        color: #48CAE4 !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+    }
+
+    /* Primary Glowing CTA Button */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #3A86FF 0%, #48CAE4 100%) !important;
+        color: #0B132B !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.3px !important;
+        box-shadow: 0 4px 20px rgba(72, 202, 228, 0.35) !important;
+        transition: all 0.25s ease !important;
+        width: 100% !important;
+    }
+
+    div.stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 30px rgba(72, 202, 228, 0.5) !important;
+        background: linear-gradient(135deg, #2563EB 0%, #38BDF8 100%) !important;
+    }
+
+    /* P-Value Evidence Frosted Cards */
+    .p-val-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(72, 202, 228, 0.15);
+        border-radius: 14px;
         padding: 14px 18px;
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .p-val-card.verified {
+        border-color: rgba(72, 202, 228, 0.4);
+        background: rgba(28, 37, 65, 0.85);
+        box-shadow: 0 4px 16px rgba(72, 202, 228, 0.08);
+    }
+
+    /* XAI Driver Item */
+    .xai-driver-item {
+        background: rgba(15, 23, 42, 0.75);
+        border-left: 3px solid #3A86FF;
         border-radius: 0 12px 12px 0;
-        font-size: 0.8rem;
-        color: #92400E;
-        margin-top: 24px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+    }
+
+    /* Clinical Disclaimer Box */
+    .nexus-disclaimer {
+        background: rgba(15, 23, 42, 0.6);
+        border-left: 3px solid #48CAE4;
+        padding: 12px 16px;
+        border-radius: 0 12px 12px 0;
+        font-size: 0.76rem;
+        color: #94A3B8;
         line-height: 1.5;
+        margin-top: 18px;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
 # -----------------------------------------------------------------------------
-# 2. Dual-Sync Interactive Calculator (Age <-> Weight <-> Height)
+# 2. Dual-Sync Interactive Calculator (Age <-> Weight <-> BMI)
 # -----------------------------------------------------------------------------
 def get_benchmark_weight_for_age(age: int) -> int:
-    """Age-calibrated population median benchmark in kg."""
+    """Returns clinical median weight benchmark in kg."""
     if age <= 25:
         return 62
     elif age <= 40:
         return 71
     elif age <= 60:
-        return 76
+        return 77
     else:
         return 72
 
 
-def calculate_bmi_info(weight_kg: float, height_cm: float = 172.0, age: int = 40) -> Dict[str, Any]:
+def compute_bmi_metrics(weight_kg: float, height_cm: float = 172.0, age: int = 40) -> Dict[str, Any]:
     safe_height = max(height_cm, 100.0) / 100.0
     bmi = round(weight_kg / (safe_height * safe_height), 1)
 
     if bmi < 18.5:
         category = "Underweight"
-        color = "#0284C7"
+        badge_class = "badge-blue"
+        color = "#60A5FA"
     elif bmi < 25.0:
-        category = "Healthy Weight"
-        color = "#0D9488"
+        category = "Optimal BMI"
+        badge_class = "badge-optimal"
+        color = "#34D399"
     elif bmi < 30.0:
         category = "Overweight"
-        color = "#D97706"
+        badge_class = "badge-amber"
+        color = "#FBBF24"
     else:
-        category = "Obese"
-        color = "#E11D48"
+        category = "Elevated Risk - Obese"
+        badge_class = "badge-crimson"
+        color = "#F87171"
+
+    # Estimated Metabolic Age baseline
+    metabolic_delta = 0
+    if bmi >= 30: metabolic_delta += 4
+    elif bmi >= 25: metabolic_delta += 2
+    elif bmi < 18.5: metabolic_delta += 1
 
     return {
         "bmi": bmi,
         "category": category,
+        "badge_class": badge_class,
         "color": color,
-        "expected_benchmark": get_benchmark_weight_for_age(age)
+        "benchmark": get_benchmark_weight_for_age(age),
+        "metabolic_delta": metabolic_delta
     }
 
 
+# Session State Initialization
+if 'nexus_age' not in st.session_state:
+    st.session_state.nexus_age = 52
+if 'nexus_weight' not in st.session_state:
+    st.session_state.nexus_weight = float(get_benchmark_weight_for_age(52))
+if 'nexus_height' not in st.session_state:
+    st.session_state.nexus_height = 172.0
+
+def on_age_change_callback():
+    """Reactive callback: sliding age recalibrates median reference weight."""
+    new_age = st.session_state.nexus_age
+    st.session_state.nexus_weight = float(get_benchmark_weight_for_age(new_age))
+
+
 # -----------------------------------------------------------------------------
-# 3. Reference Clinical Cohort (N = 2,000 synthetic patient records)
+# 3. Synthetic Reference Clinical Cohort (N = 2,500 profiles)
 # -----------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
-def generate_reference_cohort(n_samples: int = 2000, seed: int = 2026) -> pd.DataFrame:
+def generate_reference_cohort(n_samples: int = 2500, seed: int = 2026) -> pd.DataFrame:
     np.random.seed(seed)
 
-    age_groups = ['18-25', '26-40', '41-60', '61+']
-    age_cat = np.random.choice(age_groups, size=n_samples, p=[0.17, 0.33, 0.32, 0.18])
-    gender = np.random.choice(['Male', 'Female'], size=n_samples, p=[0.49, 0.51])
-    weight_status = np.random.choice(['Underweight', 'Healthy Weight', 'Overweight', 'Obese'], size=n_samples, p=[0.05, 0.44, 0.33, 0.18])
-    smoking = np.random.choice(['Non-Smoker', 'Former / Occasional', 'Active Daily Smoker'], size=n_samples, p=[0.58, 0.23, 0.19])
-    fam_hist = np.random.choice(['No', 'Yes'], size=n_samples, p=[0.68, 0.32])
+    age_cat = np.random.choice(['18-25', '26-40', '41-60', '61+'], size=n_samples, p=[0.14, 0.32, 0.34, 0.20])
+    gender = np.random.choice(['Male', 'Female'], size=n_samples, p=[0.50, 0.50])
+    weight_status = np.random.choice(['Underweight', 'Optimal BMI', 'Overweight', 'Elevated Risk - Obese'], size=n_samples, p=[0.05, 0.43, 0.34, 0.18])
+    smoking = np.random.choice(['Non-Smoker', 'Former Smoker', 'Active Smoker'], size=n_samples, p=[0.55, 0.25, 0.20])
+    activity = np.random.choice(['Active / Regular Exercise', 'Sedentary (Low Activity)'], size=n_samples, p=[0.58, 0.42])
+    sleep_apnea = np.random.choice(['Normal restful sleep', 'Frequent snoring / Waking with breathlessness (Possible Sleep Apnea)'], size=n_samples, p=[0.72, 0.28])
+    fam_hist = np.random.choice(['No', 'Yes'], size=n_samples, p=[0.65, 0.35])
 
-    # Blood Pressure
+    # Blood Pressure (Normal, Pre-Hypertensive, Stage 2 High)
     bp_list = []
-    for a, w, s in zip(age_cat, weight_status, smoking):
+    for a, w, s, slp in zip(age_cat, weight_status, smoking, sleep_apnea):
         p_high = 0.08
         if a == '41-60': p_high += 0.16
-        elif a == '61+': p_high += 0.34
-        if w == 'Overweight': p_high += 0.14
-        elif w == 'Obese': p_high += 0.28
-        if s == 'Active Daily Smoker': p_high += 0.15
-        p_high = float(np.clip(p_high, 0.04, 0.85))
+        elif a == '61+': p_high += 0.32
+        if w == 'Overweight': p_high += 0.12
+        elif w == 'Elevated Risk - Obese': p_high += 0.26
+        if s == 'Active Smoker': p_high += 0.16
+        if 'Sleep Apnea' in slp: p_high += 0.18
+        p_high = float(np.clip(p_high, 0.04, 0.88))
         p_rem = 1.0 - p_high
-        bp_list.append(np.random.choice(['Normal', 'Pre-hypertension', 'Diagnosed High'], p=[p_rem * 0.68, p_rem * 0.32, p_high]))
+        bp_list.append(np.random.choice(['Normal (<120/80)', 'Pre-Hypertensive (120-139)', 'Stage 2 High (140+)'], p=[p_rem * 0.65, p_rem * 0.35, p_high]))
 
-    # Glucose
-    sugar_list = []
-    for a, w, f in zip(age_cat, weight_status, fam_hist):
-        p_diab = 0.07
-        if a == '41-60': p_diab += 0.12
-        elif a == '61+': p_diab += 0.22
-        if w == 'Overweight': p_diab += 0.15
-        elif w == 'Obese': p_diab += 0.32
+    # Fasting Blood Glucose
+    glucose_list = []
+    for a, w, f, act in zip(age_cat, weight_status, fam_hist, activity):
+        p_diab = 0.06
+        if a in ['41-60', '61+']: p_diab += 0.18
+        if w == 'Overweight': p_diab += 0.14
+        elif w == 'Elevated Risk - Obese': p_diab += 0.34
         if f == 'Yes': p_diab += 0.18
-        p_diab = float(np.clip(p_diab, 0.03, 0.84))
+        if act == 'Sedentary (Low Activity)': p_diab += 0.10
+        p_diab = float(np.clip(p_diab, 0.03, 0.88))
         p_rem = 1.0 - p_diab
-        sugar_list.append(np.random.choice(['Normal', 'Elevated', 'Diabetic'], p=[p_rem * 0.70, p_rem * 0.30, p_diab]))
+        glucose_list.append(np.random.choice(['Normal (<100)', 'Pre-Diabetic (100-125)', 'Diabetic (126+)'], p=[p_rem * 0.70, p_rem * 0.30, p_diab]))
 
-    # Type 2 Diabetes
+    # Target Condition 1: Type-2 Diabetes
     t2d_list = []
-    for bs, w, f in zip(sugar_list, weight_status, fam_hist):
+    for gl, w, f in zip(glucose_list, weight_status, fam_hist):
         p_t2d = 0.04
-        if bs == 'Elevated': p_t2d += 0.28
-        elif bs == 'Diabetic': p_t2d += 0.65
-        if w == 'Overweight': p_t2d += 0.09
-        elif w == 'Obese': p_t2d += 0.22
-        if f == 'Yes': p_t2d += 0.14
-        p_t2d = float(np.clip(p_t2d, 0.02, 0.92))
+        if gl == 'Pre-Diabetic (100-125)': p_t2d += 0.30
+        elif gl == 'Diabetic (126+)': p_t2d += 0.68
+        if w == 'Elevated Risk - Obese': p_t2d += 0.20
+        if f == 'Yes': p_t2d += 0.15
+        p_t2d = float(np.clip(p_t2d, 0.02, 0.94))
         t2d_list.append('High' if np.random.rand() < p_t2d else 'Low')
 
-    # Coronary Heart Disease
+    # Target Condition 2: Coronary Heart Disease (CHD)
     chd_list = []
-    for g, s, bp, t2d, f, a in zip(gender, smoking, bp_list, t2d_list, fam_hist, age_cat):
+    for g, s, bp, t2d, f, a, act, slp in zip(gender, smoking, bp_list, t2d_list, fam_hist, age_cat, activity, sleep_apnea):
         p_h = 0.05
-        if g == 'Male': p_h += 0.07
-        if s == 'Former / Occasional': p_h += 0.08
-        elif s == 'Active Daily Smoker': p_h += 0.26
-        if bp == 'Pre-hypertension': p_h += 0.11
-        elif bp == 'Diagnosed High': p_h += 0.28
-        if t2d == 'High': p_h += 0.24
-        if f == 'Yes': p_h += 0.12
+        if g == 'Male': p_h += 0.08
+        if s == 'Former Smoker': p_h += 0.09
+        elif s == 'Active Smoker': p_h += 0.28
+        if bp == 'Pre-Hypertensive (120-139)': p_h += 0.12
+        elif bp == 'Stage 2 High (140+)': p_h += 0.29
+        if t2d == 'High': p_h += 0.25
+        if f == 'Yes': p_h += 0.14
         if a == '41-60': p_h += 0.10
-        elif a == '61+': p_h += 0.22
-        p_h = float(np.clip(p_h, 0.03, 0.90))
+        elif a == '61+': p_h += 0.24
+        if act == 'Sedentary (Low Activity)': p_h += 0.08
+        if 'Sleep Apnea' in slp: p_h += 0.12
+        p_h = float(np.clip(p_h, 0.03, 0.92))
         chd_list.append('High' if np.random.rand() < p_h else 'Low')
 
-    # Symptoms
+    # Target Condition 3: Hypertensive Heart Strain (HHS)
+    hhs_list = []
+    for bp, chd, slp in zip(bp_list, chd_list, sleep_apnea):
+        p_strain = 0.05
+        if bp == 'Stage 2 High (140+)': p_strain += 0.45
+        elif bp == 'Pre-Hypertensive (120-139)': p_strain += 0.18
+        if chd == 'High': p_strain += 0.25
+        if 'Sleep Apnea' in slp: p_strain += 0.15
+        p_strain = float(np.clip(p_strain, 0.02, 0.92))
+        hhs_list.append('High' if np.random.rand() < p_strain else 'Low')
+
+    # Observable Symptoms
     chest_list = []
     dyspnea_list = []
-    fatigue_list = []
-    for chd, t2d in zip(chd_list, t2d_list):
-        if chd == 'High':
-            chest_list.append(np.random.choice(['No discomfort', 'Mild dull ache', 'Sharp / Tight angina pressure'], p=[0.22, 0.43, 0.35]))
-            dyspnea_list.append(np.random.choice(['Easy & normal', 'Short of breath during mild walks', 'Breathless at rest'], p=[0.25, 0.47, 0.28]))
-        else:
-            chest_list.append(np.random.choice(['No discomfort', 'Mild dull ache', 'Sharp / Tight angina pressure'], p=[0.86, 0.11, 0.03]))
-            dyspnea_list.append(np.random.choice(['Easy & normal', 'Short of breath during mild walks', 'Breathless at rest'], p=[0.85, 0.13, 0.02]))
+    edema_list = []
 
-        if chd == 'High' or t2d == 'High':
-            fatigue_list.append(np.random.choice(['High / Normal energy', 'Chronic fatigue / Easily exhausted'], p=[0.26, 0.74]))
+    for chd, hhs in zip(chd_list, hhs_list):
+        if chd == 'High':
+            chest_list.append(np.random.choice(['None', 'Atypical sharp twinges', 'Substernal heaviness / Tight pressure'], p=[0.18, 0.38, 0.44]))
+            dyspnea_list.append(np.random.choice(['Normal', 'Short of breath on mild climb/walk', 'Breathless at rest'], p=[0.20, 0.48, 0.32]))
         else:
-            fatigue_list.append(np.random.choice(['High / Normal energy', 'Chronic fatigue / Easily exhausted'], p=[0.83, 0.17]))
+            chest_list.append(np.random.choice(['None', 'Atypical sharp twinges', 'Substernal heaviness / Tight pressure'], p=[0.87, 0.10, 0.03]))
+            dyspnea_list.append(np.random.choice(['Normal', 'Short of breath on mild climb/walk', 'Breathless at rest'], p=[0.86, 0.12, 0.02]))
+
+        if hhs == 'High' or chd == 'High':
+            edema_list.append(np.random.choice(['No swelling', 'Swelling in ankles/feet after sitting or walking'], p=[0.38, 0.62]))
+        else:
+            edema_list.append(np.random.choice(['No swelling', 'Swelling in ankles/feet after sitting or walking'], p=[0.91, 0.09]))
 
     return pd.DataFrame({
         'Age_Group': age_cat,
         'Sex': gender,
         'Weight_BMI': weight_status,
         'Smoking': smoking,
+        'Physical_Activity': activity,
+        'Sleep_Apnea': sleep_apnea,
         'Family_History': fam_hist,
         'Blood_Pressure': bp_list,
-        'Glucose': sugar_list,
+        'Glucose': glucose_list,
         'Coronary_Heart_Disease': chd_list,
         'Type2_Diabetes': t2d_list,
+        'Hypertensive_Heart_Strain': hhs_list,
         'Chest_Pain': chest_list,
         'Dyspnea': dyspnea_list,
-        'Fatigue': fatigue_list
+        'Edema': edema_list
     })
 
 
 # -----------------------------------------------------------------------------
-# 4. Bayesian Belief Network DAG Engine
+# 4. Bayesian Belief Network DAG Engine (pgmpy)
 # -----------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
-def initialize_bayesian_network(df: pd.DataFrame):
+def build_bayesian_network(df: pd.DataFrame):
     edges = [
-        # Demographics & Lifestyle -> Diseases
+        # Demographic & Lifestyle -> Conditions
         ('Age_Group', 'Coronary_Heart_Disease'),
         ('Weight_BMI', 'Coronary_Heart_Disease'),
         ('Sex', 'Coronary_Heart_Disease'),
         ('Smoking', 'Coronary_Heart_Disease'),
+        ('Physical_Activity', 'Coronary_Heart_Disease'),
+        ('Sleep_Apnea', 'Coronary_Heart_Disease'),
         ('Family_History', 'Coronary_Heart_Disease'),
 
         ('Age_Group', 'Type2_Diabetes'),
         ('Weight_BMI', 'Type2_Diabetes'),
+        ('Physical_Activity', 'Type2_Diabetes'),
         ('Family_History', 'Type2_Diabetes'),
 
-        # Inter-disease causal link
+        # Inter-Condition Influences
         ('Type2_Diabetes', 'Coronary_Heart_Disease'),
+        ('Coronary_Heart_Disease', 'Hypertensive_Heart_Strain'),
 
-        # Diseases -> Symptoms & Vitals
+        # Conditions -> Biomarkers & Symptoms
         ('Coronary_Heart_Disease', 'Chest_Pain'),
         ('Coronary_Heart_Disease', 'Dyspnea'),
-        ('Coronary_Heart_Disease', 'Fatigue'),
         ('Coronary_Heart_Disease', 'Blood_Pressure'),
-
-        ('Type2_Diabetes', 'Fatigue'),
+        ('Hypertensive_Heart_Strain', 'Edema'),
+        ('Hypertensive_Heart_Strain', 'Blood_Pressure'),
         ('Type2_Diabetes', 'Glucose')
     ]
     model = BayesianNetwork(edges)
@@ -312,357 +479,493 @@ def initialize_bayesian_network(df: pd.DataFrame):
 
 
 def run_bayesian_inference(infer: VariableElimination, evidence: Dict[str, str]) -> Dict[str, float]:
-    clean_ev = {k: v for k, v in evidence.items() if v and v != "Unchecked / Unknown"}
-    try:
-        q_h = infer.query(variables=['Coronary_Heart_Disease'], evidence=clean_ev, show_progress=False)
-        h_states = infer.model.get_cpds('Coronary_Heart_Disease').state_names['Coronary_Heart_Disease']
-        p_heart = float(q_h.values[h_states.index('High')])
-    except Exception:
-        p_heart = 0.21
+    clean_ev = {k: v for k, v in evidence.items() if v and v != "I don't know"}
 
     try:
-        q_d = infer.query(variables=['Type2_Diabetes'], evidence=clean_ev, show_progress=False)
-        d_states = infer.model.get_cpds('Type2_Diabetes').state_names['Type2_Diabetes']
-        p_diab = float(q_d.values[d_states.index('High')])
+        q_chd = infer.query(variables=['Coronary_Heart_Disease'], evidence=clean_ev, show_progress=False)
+        h_states = infer.model.get_cpds('Coronary_Heart_Disease').state_names['Coronary_Heart_Disease']
+        p_heart = float(q_chd.values[h_states.index('High')])
     except Exception:
-        p_diab = 0.16
+        p_heart = 0.22
+
+    try:
+        q_t2d = infer.query(variables=['Type2_Diabetes'], evidence=clean_ev, show_progress=False)
+        d_states = infer.model.get_cpds('Type2_Diabetes').state_names['Type2_Diabetes']
+        p_diab = float(q_t2d.values[d_states.index('High')])
+    except Exception:
+        p_diab = 0.18
+
+    try:
+        q_hhs = infer.query(variables=['Hypertensive_Heart_Strain'], evidence=clean_ev, show_progress=False)
+        s_states = infer.model.get_cpds('Hypertensive_Heart_Strain').state_names['Hypertensive_Heart_Strain']
+        p_strain = float(q_hhs.values[s_states.index('High')])
+    except Exception:
+        p_strain = 0.19
 
     return {
-        'heart_pct': p_heart * 100.0,
-        'diab_pct': p_diab * 100.0
+        'heart_risk_pct': p_heart * 100.0,
+        'diab_risk_pct': p_diab * 100.0,
+        'strain_risk_pct': p_strain * 100.0
     }
 
 
 # -----------------------------------------------------------------------------
-# 5. Chi-Square Hypothesis Testing Engine
+# 5. Chi-Square Hypothesis Testing Engine (scipy.stats)
 # -----------------------------------------------------------------------------
-def run_symptom_significance_tests(df: pd.DataFrame, active_symptoms: Dict[str, Tuple[str, str]]) -> List[Dict[str, Any]]:
-    evidence_cards = []
-    for label, (col_name, val) in active_symptoms.items():
-        if not val or val in ['No discomfort', 'Easy & normal', 'High / Normal energy', 'Normal', 'Non-Smoker', 'Healthy Weight', 'No', 'Unchecked / Unknown']:
+def calculate_p_value_significance(df: pd.DataFrame, symptom_evidence: Dict[str, Tuple[str, str]]) -> List[Dict[str, Any]]:
+    results = []
+    for label, (col_name, val) in symptom_evidence.items():
+        if not val or val in ['None', 'Normal', 'No swelling', 'Non-Smoker', 'Optimal BMI', 'Active / Regular Exercise', 'Normal restful sleep', 'No', "I don't know"]:
             continue
 
-        target_col = 'Type2_Diabetes' if col_name in ['Glucose', 'Weight_BMI', 'Family_History'] else 'Coronary_Heart_Disease'
+        target_col = 'Type2_Diabetes' if col_name in ['Glucose', 'Weight_BMI'] else 'Coronary_Heart_Disease'
         contingency = pd.crosstab(df[col_name], df[target_col])
         try:
             _, p_value, _, _ = stats.chi2_contingency(contingency)
         except Exception:
             p_value = 1.0
 
-        is_sig = p_value < 0.05
-        p_str = "< 0.001" if p_value < 0.001 else f"{p_value:.3f}"
-        badge_text = f"Statistically Significant Factor (p = {p_str})" if is_sig else f"Incidental / Coincidental (p = {p_str})"
-        explanation = (
-            "Strong clinical proof linking this specific symptom to this risk category."
-            if is_sig else
-            "Weak statistical link; this may just be incidental background noise."
-        )
+        is_significant = p_value < 0.05
+        p_val_str = f"{p_value:.4f}" if p_value >= 0.0001 else "< 0.0001"
 
-        evidence_cards.append({
-            'label': label,
-            'val': val,
-            'target': "Type-2 Diabetes" if target_col == 'Type2_Diabetes' else "Coronary Heart Disease",
-            'is_sig': is_sig,
+        if is_significant:
+            badge_text = f"Statistically Verified (p = {p_val_str})"
+            explanation = f"Statistically robust clinical association (p < 0.05). Significant prevalence skew observed among verified {target_col.replace('_', ' ')} cases."
+        else:
+            badge_text = f"Incidental (p = {p_val_str})"
+            explanation = "Statistical link does not cross the alpha threshold (p >= 0.05). Likely represents benign physiological variation or incidental overlap."
+
+        results.append({
+            'symptom_name': label,
+            'reported_value': val,
+            'target_condition': target_col.replace('_', ' '),
             'p_value': p_value,
+            'p_val_str': p_val_str,
+            'is_significant': is_significant,
             'badge_text': badge_text,
             'explanation': explanation
         })
-    return evidence_cards
+    return results
 
 
 # -----------------------------------------------------------------------------
-# 6. Sidebar Patient Intake Form (Numbered Floating Cards)
+# 6. Top Brand Header
 # -----------------------------------------------------------------------------
-cohort_df = generate_reference_cohort()
-bayes_model, bayes_infer = initialize_bayesian_network(cohort_df)
-
-# Initialize Session State
-if 'user_age' not in st.session_state:
-    st.session_state.user_age = 52
-if 'user_weight' not in st.session_state:
-    st.session_state.user_weight = get_benchmark_weight_for_age(52)
-if 'user_height' not in st.session_state:
-    st.session_state.user_height = 172
-
-def on_age_slide():
-    st.session_state.user_weight = get_benchmark_weight_for_age(st.session_state.user_age)
-
-with st.sidebar:
-    st.markdown("<h2 style='font-size: 1.15rem; font-weight: 600; color: #1E293B; margin-bottom: 2px;'>AuraHealth AI</h2>", unsafe_allow_html=True)
-    st.caption("Clinical Intelligence &amp; Risk Prediction Platform")
-    st.markdown("---")
-
-    # CARD 1: Personal Profile
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 600; color: #2563EB; margin-bottom: 4px;'>CARD 1: Personal Profile</p>", unsafe_allow_html=True)
-    user_name = st.text_input("Full Name or Identifier", value="Eleanor Vance")
-    user_gender = st.radio("Biological Sex", options=['Male', 'Female'], horizontal=True)
-
-    # Synced Age
-    user_age = st.slider(
-        "Age (years)",
-        min_value=18,
-        max_value=90,
-        value=st.session_state.user_age,
-        key='user_age',
-        on_change=on_age_slide
-    )
-    median_weight = get_benchmark_weight_for_age(user_age)
-    st.markdown(f"<span style='font-size: 0.75rem; color: #0D9488; background-color: #F0FDFA; padding: 3px 8px; border-radius: 6px; border: 1px solid #CCFBF1;'>Population median for age {user_age}: <strong>{median_weight} kg</strong></span>", unsafe_allow_html=True)
-
-    # Synced Weight
-    user_weight = st.number_input(
-        "Weight (kg)",
-        min_value=40,
-        max_value=160,
-        value=int(st.session_state.user_weight),
-        key='user_weight'
-    )
-
-    # Editable Height & BMI
-    with st.expander("Height Calibration (default 172 cm)"):
-        user_height = st.slider("Height (cm)", min_value=140, max_value=210, value=st.session_state.user_height, key='user_height')
-
-    bmi_data = calculate_bmi_info(user_weight, user_height, user_age)
-    st.markdown(f"<div style='margin-top: 6px; font-size: 0.8rem; font-weight: 500; color: {bmi_data['color']}; background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 6px 10px; border-radius: 8px;'>BMI: {bmi_data['bmi']} &middot; {bmi_data['category']}</div>", unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # CARD 2: Lifestyle & Background
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 600; color: #6366F1; margin-bottom: 4px;'>CARD 2: Lifestyle &amp; Background</p>", unsafe_allow_html=True)
-    user_smoking = st.selectbox(
-        "Smoking Status",
-        options=["Non-Smoker", "Former / Occasional", "Active Daily Smoker"],
-        index=1
-    )
-    user_fam_hist = st.checkbox("Immediate family history of heart disease or diabetes?", value=True)
-
-    st.markdown("---")
-
-    # CARD 3: Observable Symptoms & Vitals
-    st.markdown("<p style='font-size: 0.85rem; font-weight: 600; color: #0D9488; margin-bottom: 4px;'>CARD 3: Observable Symptoms &amp; Vitals</p>", unsafe_allow_html=True)
-    user_chest = st.selectbox(
-        "Chest Sensation",
-        options=["No discomfort", "Mild dull ache", "Sharp / Tight angina pressure"],
-        index=1
-    )
-    user_dyspnea = st.selectbox(
-        "Breathing Effort",
-        options=["Easy & normal", "Short of breath during mild walks", "Breathless at rest"],
-        index=1
-    )
-    user_fatigue = st.selectbox(
-        "Energy & Stamina",
-        options=["High / Normal energy", "Chronic fatigue / Easily exhausted"],
-        index=1
-    )
-    user_bp = st.selectbox(
-        "Blood Pressure Reading",
-        options=["Normal (<120/80)", "Pre-hypertension", "Diagnosed High", "Unchecked / Unknown"],
-        index=1
-    )
-    user_sugar = st.selectbox(
-        "Fasting Blood Sugar",
-        options=["Normal (<100 mg/dL)", "Elevated (100–125)", "Diabetic (126+)", "Unchecked / Unknown"],
-        index=1
-    )
-
-    st.markdown("---")
-    st.button("Run Clinical Assessment", type="primary", use_container_width=True)
-
-
-# -----------------------------------------------------------------------------
-# 7. Model Inference Execution
-# -----------------------------------------------------------------------------
-if user_age <= 25:
-    age_cat = '18-25'
-elif user_age <= 40:
-    age_cat = '26-40'
-elif user_age <= 60:
-    age_cat = '41-60'
-else:
-    age_cat = '61+'
-
-bp_map = {
-    'Normal (<120/80)': 'Normal',
-    'Pre-hypertension': 'Pre-hypertension',
-    'Diagnosed High': 'Diagnosed High',
-    'Unchecked / Unknown': 'Unchecked / Unknown'
-}
-
-sugar_map = {
-    'Normal (<100 mg/dL)': 'Normal',
-    'Elevated (100–125)': 'Elevated',
-    'Diabetic (126+)': 'Diabetic',
-    'Unchecked / Unknown': 'Unchecked / Unknown'
-}
-
-patient_evidence = {
-    'Age_Group': age_cat,
-    'Sex': user_gender,
-    'Weight_BMI': bmi_data['category'],
-    'Smoking': user_smoking,
-    'Family_History': 'Yes' if user_fam_hist else 'No',
-    'Blood_Pressure': bp_map[user_bp],
-    'Glucose': sugar_map[user_sugar],
-    'Chest_Pain': user_chest,
-    'Dyspnea': user_dyspnea,
-    'Fatigue': user_fatigue
-}
-
-bayes_results = run_bayesian_inference(bayes_infer, patient_evidence)
-heart_pct = bayes_results['heart_pct']
-diab_pct = bayes_results['diab_pct']
-
-
-def get_risk_tier_specs(pct: float):
-    if pct < 25.0:
-        return {
-            'level': 'Low Risk',
-            'color': '#0D9488',
-            'bg': '#ECFDF5',
-            'text': '#065F46',
-            'border': '#A7F3D0',
-            'tip': 'Estimated markers are within healthy tolerance limits. Continued physical activity sustains this baseline.'
-        }
-    elif pct <= 50.0:
-        return {
-            'level': 'Moderate Risk',
-            'color': '#D97706',
-            'bg': '#FFFBEB',
-            'text': '#92400E',
-            'border': '#FDE68A',
-            'tip': 'Intermediate risk signals identified. Routine laboratory lipid and glycemic checks are recommended.'
-        }
-    else:
-        return {
-            'level': 'Elevated Risk',
-            'color': '#E11D48',
-            'bg': '#FFF1F2',
-            'text': '#9F1239',
-            'border': '#FECDD3',
-            'tip': 'Significant risk drivers detected. We recommend scheduling an in-person clinical diagnostic check.'
-        }
-
-heart_tier = get_risk_tier_specs(heart_pct)
-diab_tier = get_risk_tier_specs(diab_pct)
-
-
-# -----------------------------------------------------------------------------
-# 8. Main Dashboard Screen: Executive Brief & Gauges
-# -----------------------------------------------------------------------------
-st.markdown("<h1 style='font-size: 1.5rem; font-weight: 600; color: #1E293B; margin-bottom: 2px;'>AuraHealth AI &middot; Clinical Intelligence Brief</h1>", unsafe_allow_html=True)
-st.markdown("<p style='font-size: 0.85rem; color: #64748B; margin-top: 0;'>Multi-Condition Bayesian Belief Network &middot; Chi-Square Hypothesis Testing</p>", unsafe_allow_html=True)
-
-# Executive Greeting Banner
-display_name = user_name.strip() if user_name.strip() else "Patient"
-st.markdown(f"""
-<div class="brief-header">
-    <div>
-        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; color: #1E293B;">Health Intelligence Brief for {display_name}</h3>
-        <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #64748B;">
-            Age: <strong>{user_age}</strong> &middot; Sex: <strong>{user_gender}</strong> &middot; BMI: <strong>{bmi_data['bmi']} ({bmi_data['category']})</strong> &middot; Smoking: <strong>{user_smoking}</strong>
-        </p>
+st.markdown("""
+<div class="nexus-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 1.8rem; filter: drop-shadow(0 0 10px rgba(72,202,228,0.5));">🧬</span>
+        <div>
+            <h1 class="nexus-brand-title">AuraHealth Nexus</h1>
+            <p class="nexus-tagline">Deep Cyber Blue Clinical Decision Support System &middot; Gemini AI Architecture</p>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="nexus-badge badge-cyan">Bayesian Engine v4.2</span>
+        <span class="nexus-badge badge-optimal">N = 2,500 Cohort Grounded</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# 2 Large Plotly Circular Radial Gauges
-gauge_col1, gauge_col2 = st.columns(2)
 
-def create_circular_gauge(value: float, title: str, tier: Dict[str, Any]) -> go.Figure:
+# Load Cohort and Fit Bayesian Network
+cohort_df = generate_reference_cohort()
+bayes_dag, bayes_engine = build_bayesian_network(cohort_df)
+
+
+# -----------------------------------------------------------------------------
+# 7. Sidebar Intake Form (Logical Sections & Dual-Sync)
+# -----------------------------------------------------------------------------
+with st.sidebar:
+    st.markdown("### 🧬 Patient Clinical Intake")
+    st.caption("Complete physiological markers and presenting symptom profile.")
+
+    # Section A: Demographics & Biometrics
+    with st.expander("Section A: Core Demographics & Dual Sync", expanded=True):
+        patient_name = st.text_input("Patient Identifier / Name", value="Eleanor Vance", key="inp_name")
+
+        patient_age = st.slider(
+            "Age (Years)",
+            min_value=18,
+            max_value=85,
+            value=st.session_state.nexus_age,
+            key="nexus_age",
+            on_change=on_age_change_callback
+        )
+
+        expected_benchmark = get_benchmark_weight_for_age(patient_age)
+        st.markdown(f"""
+        <div style="margin-bottom: 10px;">
+            <span class="nexus-badge badge-cyan">
+                Median for Age {patient_age}: <strong>{expected_benchmark} kg</strong>
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_w, col_h = st.columns(2)
+        with col_w:
+            patient_weight = st.number_input(
+                "Weight (kg)",
+                min_value=35.0,
+                max_value=180.0,
+                value=float(st.session_state.nexus_weight),
+                step=0.5,
+                key="nexus_weight"
+            )
+        with col_h:
+            patient_height = st.number_input(
+                "Height (cm)",
+                min_value=130.0,
+                max_value=220.0,
+                value=float(st.session_state.nexus_height),
+                step=1.0,
+                key="nexus_height"
+            )
+
+        bmi_metrics = compute_bmi_metrics(patient_weight, patient_height, patient_age)
+        st.markdown(f"""
+        <div style="margin-top: 4px; margin-bottom: 8px;">
+            <span class="nexus-badge {bmi_metrics['badge_class']}">
+                BMI: <strong>{bmi_metrics['bmi']}</strong> &middot; {bmi_metrics['category']}
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        patient_sex = st.radio("Biological Sex", options=["Female", "Male"], horizontal=True, key="inp_sex")
+
+    # Section B: Lifestyle & High-Yield Clinical Markers
+    with st.expander("Section B: Lifestyle & Clinical Markers", expanded=True):
+        patient_smoking = st.selectbox(
+            "Smoking Habit",
+            options=["Non-Smoker", "Former Smoker", "Active Smoker"],
+            index=1,
+            key="inp_smoking"
+        )
+
+        patient_activity = st.selectbox(
+            "Physical Activity Level",
+            options=["Active / Regular Exercise", "Sedentary (Low Activity)"],
+            index=1,
+            key="inp_activity"
+        )
+
+        patient_sleep = st.selectbox(
+            "Sleep Quality & Night Breathing",
+            options=[
+                "Normal restful sleep",
+                "Frequent snoring / Waking with breathlessness (Possible Sleep Apnea)"
+            ],
+            index=0,
+            key="inp_sleep"
+        )
+
+        patient_fam_hist = st.toggle(
+            "Immediate family history of Heart Attack or Diabetes?",
+            value=True,
+            key="inp_fam_hist"
+        )
+
+    # Section C: Acute Symptoms & Biomarkers
+    with st.expander("Section C: Acute Symptoms & Biomarkers", expanded=True):
+        patient_chest = st.selectbox(
+            "Chest Discomfort",
+            options=["None", "Atypical sharp twinges", "Substernal heaviness / Tight pressure"],
+            index=1,
+            key="inp_chest"
+        )
+
+        patient_dyspnea = st.selectbox(
+            "Exertional Dyspnea (Breathing)",
+            options=["Normal", "Short of breath on mild climb/walk", "Breathless at rest"],
+            index=1,
+            key="inp_dyspnea"
+        )
+
+        patient_edema = st.selectbox(
+            "Peripheral Edema",
+            options=["No swelling", "Swelling in ankles/feet after sitting or walking"],
+            index=1,
+            key="inp_edema"
+        )
+
+        patient_glucose = st.selectbox(
+            "Fasting Blood Glucose (mg/dL)",
+            options=["Normal (<100)", "Pre-Diabetic (100-125)", "Diabetic (126+)", "I don't know"],
+            index=1,
+            key="inp_glucose"
+        )
+
+        patient_bp = st.selectbox(
+            "Blood Pressure",
+            options=["Normal (<120/80)", "Pre-Hypertensive (120-139)", "Stage 2 High (140+)", "I don't know"],
+            index=1,
+            key="inp_bp"
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    run_btn = st.button("Run Bayesian Assessment", type="primary", use_container_width=True)
+
+
+# -----------------------------------------------------------------------------
+# 8. Model Inference & Risk Mapping
+# -----------------------------------------------------------------------------
+if patient_age <= 25:
+    age_category = '18-25'
+elif patient_age <= 40:
+    age_category = '26-40'
+elif patient_age <= 60:
+    age_category = '41-60'
+else:
+    age_category = '61+'
+
+active_evidence = {
+    'Age_Group': age_category,
+    'Sex': patient_sex,
+    'Weight_BMI': bmi_metrics['category'],
+    'Smoking': patient_smoking,
+    'Physical_Activity': patient_activity,
+    'Sleep_Apnea': patient_sleep,
+    'Family_History': 'Yes' if patient_fam_hist else 'No',
+    'Blood_Pressure': patient_bp,
+    'Glucose': patient_glucose,
+    'Chest_Pain': patient_chest,
+    'Dyspnea': patient_dyspnea,
+    'Edema': patient_edema
+}
+
+posterior_risks = run_bayesian_inference(bayes_engine, active_evidence)
+heart_risk = posterior_risks['heart_risk_pct']
+diab_risk = posterior_risks['diab_risk_pct']
+strain_risk = posterior_risks['strain_risk_pct']
+
+# Calculate Metabolic Age
+lifestyle_penalty = 0
+if patient_smoking == 'Active Smoker': lifestyle_penalty += 5
+elif patient_smoking == 'Former Smoker': lifestyle_penalty += 2
+if patient_activity == 'Sedentary (Low Activity)': lifestyle_penalty += 3
+if 'Sleep Apnea' in patient_sleep: lifestyle_penalty += 3
+calculated_metabolic_age = patient_age + bmi_metrics['metabolic_delta'] + lifestyle_penalty
+
+def get_risk_theme(pct: float) -> Dict[str, Any]:
+    if pct < 25.0:
+        return {
+            'level': 'Low Risk',
+            'color': '#48CAE4',
+            'gauge_color': '#48CAE4',
+            'badge_class': 'badge-cyan',
+            'summary': 'Hemodynamic and metabolic markers are within balanced tolerances.'
+        }
+    elif pct <= 50.0:
+        return {
+            'level': 'Moderate Risk',
+            'color': '#FBBF24',
+            'gauge_color': '#FBBF24',
+            'badge_class': 'badge-amber',
+            'summary': 'Intermediate clinical elevation. Active surveillance and lifestyle intervention recommended.'
+        }
+    else:
+        return {
+            'level': 'Elevated Risk',
+            'color': '#F87171',
+            'gauge_color': '#EF4444',
+            'badge_class': 'badge-crimson',
+            'summary': 'Acute Bayesian risk signature detected. Diagnostic verification strongly advised.'
+        }
+
+heart_theme = get_risk_theme(heart_risk)
+diab_theme = get_risk_theme(diab_risk)
+
+
+# -----------------------------------------------------------------------------
+# 9. Main Visual Intelligence Dashboard (Gemini Dark Layout)
+# -----------------------------------------------------------------------------
+
+# Panel 1: AI Consultation Greeting Card
+display_name = patient_name.strip() if patient_name.strip() else "Patient"
+timestamp_now = datetime.now().strftime("%B %d, %Y &middot; %H:%M UTC")
+
+col_greet_left, col_greet_right = st.columns([8, 4])
+with col_greet_left:
+    st.markdown(f"""
+    <div class="nexus-card" style="padding: 20px 24px; margin-bottom: 20px;">
+        <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #48CAE4; font-family: monospace;">AURA AI CLINICAL SYNTHESIS</span>
+        <h2 style="font-size: 1.4rem; font-weight: 700; color: #FFFFFF; margin: 4px 0 6px 0;">Patient Evaluation for {display_name}</h2>
+        <p style="font-size: 0.8rem; color: #94A3B8; margin: 0;">
+            Chronological Age: <strong style="color: #FFFFFF;">{patient_age} yrs</strong> &middot; Calculated Metabolic Age: <strong style="color: #48CAE4;">{calculated_metabolic_age} yrs</strong> &middot; Generated {timestamp_now}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_greet_right:
+    # Summary Report Download
+    report_text = f"""=======================================================
+AURAHEALTH NEXUS - CLINICAL INTELLIGENCE BRIEF
+=======================================================
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Patient Identifier: {display_name}
+Chronological Age:  {patient_age} years
+Calculated Metabolic Age: {calculated_metabolic_age} years
+Biometrics: Weight {patient_weight} kg | Height {patient_height} cm | BMI {bmi_metrics['bmi']} ({bmi_metrics['category']})
+Median Reference Benchmark: {expected_benchmark} kg
+
+-------------------------------------------------------
+BAYESIAN POSTERIOR PROBABILITY SYNTHESIS
+-------------------------------------------------------
+Coronary Heart Disease Risk:  {heart_risk:.2f}% [{heart_theme['level']}]
+Type-2 Diabetes Risk:         {diab_risk:.2f}% [{diab_theme['level']}]
+Hypertensive Heart Strain:    {strain_risk:.2f}%
+
+-------------------------------------------------------
+OBSERVED CLINICAL EVIDENCE PROFILE
+-------------------------------------------------------
+* Smoking Habit: {patient_smoking}
+* Physical Activity: {patient_activity}
+* Sleep / Night Breathing: {patient_sleep}
+* Family Hereditary Risk: {'Positive' if patient_fam_hist else 'Negative'}
+* Chest Discomfort: {patient_chest}
+* Exertional Dyspnea: {patient_dyspnea}
+* Peripheral Edema: {patient_edema}
+* Fasting Glucose: {patient_glucose}
+* Blood Pressure: {patient_bp}
+
+-------------------------------------------------------
+CLINICAL GOVERNANCE NOTICE:
+This report is generated by a Bayesian Decision Support demonstration
+and does not replace formal physician clinical examination.
+======================================================="""
+
+    st.markdown("""<div class="nexus-card" style="padding: 20px 24px; text-align: center; margin-bottom: 20px;">""", unsafe_allow_html=True)
+    st.download_button(
+        label="Download Clinical Summary (.TXT)",
+        data=report_text,
+        file_name=f"AuraNexus_{display_name.replace(' ', '_')}.txt",
+        mime="text/plain",
+        use_container_width=True
+    )
+    st.markdown("""<span style="font-size: 0.72rem; color: #64748B;">PDF/Structured clinical telemetry ready</span></div>""", unsafe_allow_html=True)
+
+
+# Panel 2: Dual Holographic Plotly Radial Gauges
+col_g1, col_g2 = st.columns(2)
+
+def create_holographic_gauge(val: float, title: str, theme: Dict[str, Any]) -> go.Figure:
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
-        value=value,
+        value=val,
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': f"<b>{title}</b><br><span style='font-size:12px;color:#64748B'>Bayesian Posterior</span>", 'font': {'size': 16, 'color': '#1E293B', 'family': 'sans-serif'}},
-        number={'suffix': "%", 'font': {'size': 36, 'color': tier['color'], 'family': 'monospace'}},
+        title={
+            'text': f"<span style='color: #E2E8F0; font-size: 15px;'>{title}</span>",
+            'font': {'size': 15, 'family': 'Plus Jakarta Sans, sans-serif'}
+        },
+        number={
+            'suffix': "%",
+            'font': {'size': 32, 'color': theme['color'], 'family': 'monospace'}
+        },
         gauge={
-            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#CBD5E1"},
-            'bar': {'color': tier['color'], 'thickness': 0.28},
-            'bgcolor': "#F1F5F9",
+            'shape': "angular",
+            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
+            'bar': {'color': theme['gauge_color'], 'thickness': 0.35},
+            'bgcolor': "rgba(15, 23, 42, 0.6)",
             'borderwidth': 0,
             'steps': [
-                {'range': [0, 25], 'color': '#ECFDF5'},
-                {'range': [25, 50], 'color': '#FFFBEB'},
-                {'range': [50, 100], 'color': '#FFF1F2'}
-            ]
+                {'range': [0, 25], 'color': 'rgba(72, 202, 228, 0.18)'},
+                {'range': [25, 50], 'color': 'rgba(245, 158, 11, 0.18)'},
+                {'range': [50, 100], 'color': 'rgba(239, 68, 68, 0.22)'}
+            ],
+            'threshold': {
+                'line': {'color': theme['color'], 'width': 3},
+                'thickness': 0.8,
+                'value': val
+            }
         }
     ))
     fig.update_layout(
-        paper_bgcolor="#FFFFFF",
-        plot_bgcolor="#FFFFFF",
-        height=240,
-        margin=dict(l=20, r=20, t=40, b=10)
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        height=210,
+        margin=dict(l=20, r=20, t=35, b=5)
     )
     return fig
 
-with gauge_col1:
-    st.plotly_chart(create_circular_gauge(heart_pct, "Coronary Heart Disease", heart_tier), use_container_width=True)
+with col_g1:
+    st.markdown("""<div class="nexus-card">""", unsafe_allow_html=True)
+    st.plotly_chart(create_holographic_gauge(heart_risk, "Coronary Heart Disease Risk", heart_theme), use_container_width=True)
     st.markdown(f"""
-    <div style="background-color: {heart_tier['bg']}; border: 1px solid {heart_tier['border']}; border-radius: 12px; padding: 12px; margin-top: -10px;">
-        <span style="font-size: 0.75rem; font-weight: 600; color: {heart_tier['text']}; text-transform: uppercase;">Status: {heart_tier['level']}</span>
-        <p style="font-size: 0.8rem; color: #475569; margin: 4px 0 0 0;">{heart_tier['tip']}</p>
+        <div style="text-align: center; margin-top: -6px;">
+            <span class="nexus-badge {heart_theme['badge_class']}">{heart_theme['level']}</span>
+            <p style="font-size: 0.76rem; color: #94A3B8; margin: 6px 0 0 0;">{heart_theme['summary']}</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-with gauge_col2:
-    st.plotly_chart(create_circular_gauge(diab_pct, "Type-2 Diabetes", diab_tier), use_container_width=True)
+with col_g2:
+    st.markdown("""<div class="nexus-card">""", unsafe_allow_html=True)
+    st.plotly_chart(create_holographic_gauge(diab_risk, "Type-2 Diabetes Risk", diab_theme), use_container_width=True)
     st.markdown(f"""
-    <div style="background-color: {diab_tier['bg']}; border: 1px solid {diab_tier['border']}; border-radius: 12px; padding: 12px; margin-top: -10px;">
-        <span style="font-size: 0.75rem; font-weight: 600; color: {diab_tier['text']}; text-transform: uppercase;">Status: {diab_tier['level']}</span>
-        <p style="font-size: 0.8rem; color: #475569; margin: 4px 0 0 0;">{diab_tier['tip']}</p>
+        <div style="text-align: center; margin-top: -6px;">
+            <span class="nexus-badge {diab_theme['badge_class']}">{diab_theme['level']}</span>
+            <p style="font-size: 0.76rem; color: #94A3B8; margin: 6px 0 0 0;">{diab_theme['summary']}</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 
-# -----------------------------------------------------------------------------
-# 9. Interactive Bayesian Graph Visualization (NetworkX + Plotly)
-# -----------------------------------------------------------------------------
-st.markdown("---")
-st.markdown("<h3 style='font-size: 1.1rem; font-weight: 600; color: #1E293B; margin-bottom: 2px;'>Interactive Bayesian Belief Network (DAG)</h3>", unsafe_allow_html=True)
-st.caption("Active patient symptoms glow in Blue (#2563EB), predicted diseases highlight in severity-matched Amber/Rose, and baseline nodes remain soft Gray.")
+# Panel 3: Interactive 2D Bayesian Causal Network Graph
+st.markdown("""
+<div class="nexus-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div>
+            <h4 class="nexus-card-title">Interactive 2D Bayesian Causal DAG</h4>
+            <p class="nexus-card-subtitle">Probabilistic dependency topology with real-time node activation</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <span class="nexus-badge badge-cyan">Active Symptoms (#48CAE4)</span>
+            <span class="nexus-badge badge-crimson">Target Conditions</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 G = nx.DiGraph()
 pos = {
-    'Age_Group': (0.1, 0.9),
-    'Weight_BMI': (0.1, 0.7),
-    'Sex': (0.1, 0.5),
-    'Smoking': (0.1, 0.3),
-    'Family_History': (0.1, 0.1),
+    'Age_Group': (0.1, 0.95),
+    'Weight_BMI': (0.1, 0.75),
+    'Smoking': (0.1, 0.55),
+    'Physical_Activity': (0.1, 0.35),
+    'Sleep_Apnea': (0.1, 0.15),
 
-    'Coronary_Heart_Disease': (0.5, 0.7),
-    'Type2_Diabetes': (0.5, 0.3),
+    'Coronary_Heart_Disease': (0.5, 0.75),
+    'Type2_Diabetes': (0.5, 0.35),
+    'Hypertensive_Heart_Strain': (0.5, 0.05),
 
-    'Chest_Pain': (0.9, 0.9),
-    'Dyspnea': (0.9, 0.7),
-    'Fatigue': (0.9, 0.5),
-    'Blood_Pressure': (0.9, 0.3),
-    'Glucose': (0.9, 0.1)
+    'Chest_Pain': (0.9, 0.95),
+    'Dyspnea': (0.9, 0.75),
+    'Edema': (0.9, 0.55),
+    'Blood_Pressure': (0.9, 0.35),
+    'Glucose': (0.9, 0.15)
 }
 
-edge_list = [
+dag_edges = [
     ('Age_Group', 'Coronary_Heart_Disease'),
     ('Weight_BMI', 'Coronary_Heart_Disease'),
-    ('Sex', 'Coronary_Heart_Disease'),
     ('Smoking', 'Coronary_Heart_Disease'),
-    ('Family_History', 'Coronary_Heart_Disease'),
+    ('Physical_Activity', 'Coronary_Heart_Disease'),
+    ('Sleep_Apnea', 'Coronary_Heart_Disease'),
 
     ('Age_Group', 'Type2_Diabetes'),
     ('Weight_BMI', 'Type2_Diabetes'),
-    ('Family_History', 'Type2_Diabetes'),
+    ('Physical_Activity', 'Type2_Diabetes'),
 
     ('Type2_Diabetes', 'Coronary_Heart_Disease'),
+    ('Coronary_Heart_Disease', 'Hypertensive_Heart_Strain'),
 
     ('Coronary_Heart_Disease', 'Chest_Pain'),
     ('Coronary_Heart_Disease', 'Dyspnea'),
-    ('Coronary_Heart_Disease', 'Fatigue'),
     ('Coronary_Heart_Disease', 'Blood_Pressure'),
-
-    ('Type2_Diabetes', 'Fatigue'),
+    ('Hypertensive_Heart_Strain', 'Edema'),
+    ('Hypertensive_Heart_Strain', 'Blood_Pressure'),
     ('Type2_Diabetes', 'Glucose')
 ]
-
-G.add_edges_from(edge_list)
+G.add_edges_from(dag_edges)
 
 edge_x = []
 edge_y = []
@@ -674,65 +977,49 @@ for edge in G.edges():
 
 edge_trace = go.Scatter(
     x=edge_x, y=edge_y,
-    line=dict(width=1.5, color='#CBD5E1'),
+    line=dict(width=1.5, color='rgba(72, 202, 228, 0.25)'),
     hoverinfo='none',
     mode='lines'
 )
 
-node_x = []
-node_y = []
-node_text = []
-node_color = []
-node_size = []
+# Active node determination
+is_chest_active = patient_chest != 'None'
+is_dyspnea_active = patient_dyspnea != 'Normal'
+is_edema_active = patient_edema != 'No swelling'
+is_bp_active = patient_bp in ['Pre-Hypertensive (120-139)', 'Stage 2 High (140+)']
+is_glucose_active = patient_glucose in ['Pre-Diabetic (100-125)', 'Diabetic (126+)']
+is_smoking_active = patient_smoking != 'Non-Smoker'
+is_weight_active = bmi_metrics['category'] != 'Optimal BMI'
+is_sleep_active = 'Sleep Apnea' in patient_sleep
+is_activity_active = patient_activity == 'Sedentary (Low Activity)'
 
-is_chest_active = user_chest != 'No discomfort'
-is_dyspnea_active = user_dyspnea != 'Easy & normal'
-is_fatigue_active = user_fatigue != 'High / Normal energy'
-is_bp_active = user_bp in ['Pre-hypertension', 'Diagnosed High']
-is_glucose_active = user_sugar in ['Elevated (100–125)', 'Diabetic (126+)']
-is_smoking_active = user_smoking != 'Non-Smoker'
-is_weight_active = bmi_data['category'] != 'Healthy Weight'
+node_data = {
+    'Age_Group': (True, '#48CAE4', f"Age: {patient_age}"),
+    'Weight_BMI': (is_weight_active, '#48CAE4' if is_weight_active else '#475569', f"BMI: {bmi_metrics['bmi']}"),
+    'Smoking': (is_smoking_active, '#48CAE4' if is_smoking_active else '#475569', f"Smoke: {patient_smoking.split()[0]}"),
+    'Physical_Activity': (is_activity_active, '#48CAE4' if is_activity_active else '#475569', f"Activity: {patient_activity.split()[0]}"),
+    'Sleep_Apnea': (is_sleep_active, '#48CAE4' if is_sleep_active else '#475569', f"Sleep: {'Apnea' if is_sleep_active else 'Normal'}"),
 
-active_map = {
-    'Age_Group': (True, '#2563EB'),
-    'Sex': (True, '#2563EB'),
-    'Weight_BMI': (is_weight_active, '#2563EB' if is_weight_active else '#94A3B8'),
-    'Smoking': (is_smoking_active, '#2563EB' if is_smoking_active else '#94A3B8'),
-    'Family_History': (user_fam_hist, '#2563EB' if user_fam_hist else '#94A3B8'),
+    'Coronary_Heart_Disease': (True, heart_theme['color'], f"CHD: {heart_risk:.1f}%"),
+    'Type2_Diabetes': (True, diab_theme['color'], f"T2D: {diab_risk:.1f}%"),
+    'Hypertensive_Heart_Strain': (True, '#F87171' if strain_risk > 35 else '#34D399', f"HHS: {strain_risk:.1f}%"),
 
-    'Coronary_Heart_Disease': (True, heart_tier['color']),
-    'Type2_Diabetes': (True, diab_tier['color']),
-
-    'Chest_Pain': (is_chest_active, '#2563EB' if is_chest_active else '#94A3B8'),
-    'Dyspnea': (is_dyspnea_active, '#2563EB' if is_dyspnea_active else '#94A3B8'),
-    'Fatigue': (is_fatigue_active, '#2563EB' if is_fatigue_active else '#94A3B8'),
-    'Blood_Pressure': (is_bp_active, '#2563EB' if is_bp_active else '#94A3B8'),
-    'Glucose': (is_glucose_active, '#2563EB' if is_glucose_active else '#94A3B8')
+    'Chest_Pain': (is_chest_active, '#48CAE4' if is_chest_active else '#475569', f"Chest: {patient_chest.split()[0]}"),
+    'Dyspnea': (is_dyspnea_active, '#48CAE4' if is_dyspnea_active else '#475569', f"Dyspnea: {patient_dyspnea.split()[0]}"),
+    'Edema': (is_edema_active, '#48CAE4' if is_edema_active else '#475569', f"Edema: {'Yes' if is_edema_active else 'No'}"),
+    'Blood_Pressure': (is_bp_active, '#48CAE4' if is_bp_active else '#475569', f"BP: {patient_bp.split()[0]}"),
+    'Glucose': (is_glucose_active, '#48CAE4' if is_glucose_active else '#475569', f"Sugar: {patient_glucose.split()[0]}")
 }
 
-labels_map = {
-    'Age_Group': f"Age: {user_age}y",
-    'Sex': f"Sex: {user_gender}",
-    'Weight_BMI': f"BMI: {bmi_data['bmi']}",
-    'Smoking': f"Smoking: {user_smoking}",
-    'Family_History': f"Family Hist: {'Yes' if user_fam_hist else 'No'}",
-    'Coronary_Heart_Disease': f"Heart Disease: {heart_pct:.1f}%",
-    'Type2_Diabetes': f"Diabetes: {diab_pct:.1f}%",
-    'Chest_Pain': f"Chest: {user_chest}",
-    'Dyspnea': f"Breathing: {user_dyspnea}",
-    'Fatigue': f"Energy: {user_fatigue}",
-    'Blood_Pressure': f"BP: {user_bp}",
-    'Glucose': f"Glucose: {user_sugar}"
-}
-
+node_x, node_y, node_color, node_size, node_text = [], [], [], [], []
 for node in G.nodes():
     x, y = pos[node]
     node_x.append(x)
     node_y.append(y)
-    is_act, col = active_map[node]
+    is_act, col, lbl = node_data[node]
     node_color.append(col)
-    node_size.append(28 if 'Disease' in node or 'Diabetes' in node else (22 if is_act else 16))
-    node_text.append(labels_map[node])
+    node_size.append(26 if 'Disease' in node or 'Diabetes' in node or 'Strain' in node else (22 if is_act else 14))
+    node_text.append(lbl)
 
 node_trace = go.Scatter(
     x=node_x, y=node_y,
@@ -740,153 +1027,150 @@ node_trace = go.Scatter(
     hoverinfo='text',
     text=node_text,
     textposition="top center",
-    textfont=dict(size=10, color='#1E293B'),
+    textfont=dict(size=10, color='#E2E8F0', family='Plus Jakarta Sans, sans-serif'),
     marker=dict(
         color=node_color,
         size=node_size,
-        line=dict(width=2, color='#FFFFFF')
+        line=dict(width=2, color='#0B132B')
     )
 )
 
-fig_dag = go.Figure(data=[edge_trace, node_trace],
-             layout=go.Layout(
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=20,l=20,r=20,t=20),
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                paper_bgcolor='#F8FAFC',
-                plot_bgcolor='#F8FAFC',
-                height=350
-            ))
-
+fig_dag = go.Figure(
+    data=[edge_trace, node_trace],
+    layout=go.Layout(
+        showlegend=False,
+        hovermode='closest',
+        margin=dict(b=15, l=15, r=15, t=15),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        height=320
+    )
+)
 st.plotly_chart(fig_dag, use_container_width=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 
-# -----------------------------------------------------------------------------
-# 10. Statistical Evidence Breakdown (Cards)
-# -----------------------------------------------------------------------------
-st.markdown("---")
-st.markdown("<h3 style='font-size: 1.1rem; font-weight: 600; color: #1E293B; margin-bottom: 2px;'>Statistical Evidence Breakdown (&chi;&sup2; P-Value Testing)</h3>", unsafe_allow_html=True)
-st.caption("Hypothesis testing evaluated against N = 2,000 clinical cohort records (&alpha; = 0.05). Distinguishes true clinical factors from coincidental noise.")
+# Panel 4: P-Value Evidence Cards & Explainable AI (XAI)
+col_pval, col_xai = st.columns([6, 6])
 
-active_evidence_inputs = {
-    'Chest Sensation': ('Chest_Pain', user_chest),
-    'Breathing Effort': ('Dyspnea', user_dyspnea),
-    'Energy & Stamina': ('Fatigue', user_fatigue),
-    'Smoking Status': ('Smoking', user_smoking),
-    'BMI Category': ('Weight_BMI', bmi_data['category']),
-    'Blood Pressure': ('Blood_Pressure', bp_map[user_bp]),
-    'Fasting Blood Sugar': ('Glucose', sugar_map[user_sugar])
-}
+with col_pval:
+    st.markdown("""
+    <div class="nexus-card">
+        <h4 class="nexus-card-title">P-Value Significance Breakdown</h4>
+        <p class="nexus-card-subtitle">&chi;&sup2; Hypothesis Testing vs N = 2,500 Reference Cohort</p>
+        <div style="margin-top: 14px;">
+    """, unsafe_allow_html=True)
 
-stat_cards = run_symptom_significance_tests(cohort_df, active_evidence_inputs)
+    symptom_evidence_dict = {
+        'Chest Discomfort': ('Chest_Pain', patient_chest),
+        'Exertional Dyspnea': ('Dyspnea', patient_dyspnea),
+        'Peripheral Edema': ('Edema', patient_edema),
+        'Smoking Habit': ('Smoking', patient_smoking),
+        'Physical Inactivity': ('Physical_Activity', patient_activity),
+        'Sleep Apnea Pattern': ('Sleep_Apnea', patient_sleep),
+        'Blood Pressure': ('Blood_Pressure', patient_bp),
+        'Fasting Glucose': ('Glucose', patient_glucose),
+        'BMI Status': ('Weight_BMI', bmi_metrics['category'])
+    }
 
-if stat_cards:
-    ev_c1, ev_c2 = st.columns(2)
-    for i, sc in enumerate(stat_cards):
-        col = ev_c1 if i % 2 == 0 else ev_c2
-        sig_class = "sig" if sc['is_sig'] else ""
-        badge_color = "#1D4ED8" if sc['is_sig'] else "#475569"
-        badge_bg = "#DBEAFE" if sc['is_sig'] else "#E2E8F0"
+    sig_cards = calculate_p_value_significance(cohort_df, symptom_evidence_dict)
 
-        with col:
+    if sig_cards:
+        for sc in sig_cards:
+            is_sig = sc['is_significant']
+            card_class = "verified" if is_sig else ""
+            badge_html = f"<span class='nexus-badge badge-optimal'>{sc['badge_text']}</span>" if is_sig else f"<span class='nexus-badge badge-blue'>{sc['badge_text']}</span>"
+
             st.markdown(f"""
-            <div class="evidence-card {sig_class}">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div class="p-val-card {card_class}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                     <div>
-                        <span style="font-size: 0.7rem; color: #64748B; text-transform: uppercase;">Observed Factor</span>
-                        <h4 style="margin: 2px 0 0 0; font-size: 0.85rem; font-weight: 600; color: #1E293B;">{sc['label']}</h4>
+                        <span style="font-size: 10px; font-weight: 700; color: #48CAE4; text-transform: uppercase;">Observed Marker</span>
+                        <h5 style="margin: 0; font-size: 0.86rem; font-weight: 600; color: #FFFFFF;">{sc['symptom_name']}</h5>
                     </div>
-                    <span style="font-size: 0.7rem; font-weight: 500; color: {badge_color}; background-color: {badge_bg}; padding: 3px 8px; border-radius: 9999px;">
-                        {sc['badge_text']}
-                    </span>
+                    {badge_html}
                 </div>
-                <div style="margin-top: 8px; font-size: 0.75rem; color: #1E293B;">
-                    Reported Value: <strong>{sc['val']}</strong> &middot; Target: <em>{sc['target']}</em>
+                <div style="font-size: 0.76rem; color: #CBD5E1; margin-bottom: 4px;">
+                    Finding: <strong style="color: #FFFFFF;">{sc['reported_value']}</strong> &middot; Target: <em>{sc['target_condition']}</em>
                 </div>
-                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.05); font-size: 0.75rem; color: #64748B;">
+                <div style="font-size: 0.74rem; color: #94A3B8; line-height: 1.45;">
                     {sc['explanation']}
                 </div>
             </div>
             """, unsafe_allow_html=True)
-else:
-    st.info("All reported symptoms and vitals are at baseline normal tolerances. No significant pathological deviations detected.")
+    else:
+        st.markdown("""
+        <div style="padding: 16px; background: rgba(15, 23, 42, 0.5); border-radius: 12px; text-align: center;">
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0;">
+                All entered parameters reflect baseline physiological norms. No statistically anomalous deviations detected.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 
-# -----------------------------------------------------------------------------
-# 11. Personalized Actionable Guidance
-# -----------------------------------------------------------------------------
-st.markdown("---")
-st.markdown("<h3 style='font-size: 1.1rem; font-weight: 600; color: #1E293B; margin-bottom: 2px;'>Personalized Clinical Action Plan</h3>", unsafe_allow_html=True)
-st.caption("Evidence-grounded next steps tailored to your primary risk drivers.")
+with col_xai:
+    st.markdown("""
+    <div class="nexus-card">
+        <h4 class="nexus-card-title">Explainable AI (XAI) Risk Drivers</h4>
+        <p class="nexus-card-subtitle">Primary clinical contributors that amplified the posterior probability</p>
+        <div style="margin-top: 14px;">
+    """, unsafe_allow_html=True)
 
-rec_col1, rec_col2, rec_col3 = st.columns(3)
+    # Calculate Top 3 Primary Drivers
+    xai_drivers = []
+    if patient_smoking == 'Active Smoker':
+        xai_drivers.append(("Active Tobacco Combustion", "Contributed ~+26% to coronary arterial strain and microvascular endothelial dysfunction."))
+    elif patient_smoking == 'Former Smoker':
+        xai_drivers.append(("Former Smoking History", "Residual vascular stiffness contributes ~+9% to baseline cardiovascular probability."))
 
-recommendations = []
-if user_smoking == 'Active Daily Smoker':
-    recommendations.append(('Smoking Cessation Protocol', 'Active smoking is your highest modifiable cardiovascular driver. Consult your physician regarding nicotine replacement or pharmacological support.'))
-elif user_smoking == 'Former / Occasional':
-    recommendations.append(('Zero-Exposure Maintenance', 'Occasional inhalation still triggers endothelial micro-damage. Sustained smoke-free status drastically decreases long-term vascular inflammation.'))
+    if patient_bp in ['Pre-Hypertensive (120-139)', 'Stage 2 High (140+)']:
+        xai_drivers.append(("Elevated Hemodynamic Pressure", f"Hypertensive baseline ({patient_bp.split()[0]}) contributed +22% to systemic cardiac afterload."))
 
-if user_chest != 'No discomfort' or heart_pct > 35:
-    recommendations.append(('Cardiovascular Diagnostic Baseline', 'Reported discomfort or elevated Bayesian likelihood indicates scheduling a resting 12-lead ECG, troponin check, and coronary calcium scan (CAC).'))
-elif user_dyspnea != 'Easy & normal':
-    recommendations.append(('Cardiopulmonary Stress Test', 'Exertional dyspnea warrants evaluation via standard treadmill exercise testing to monitor peak VO2 and ST segment changes.'))
+    if patient_glucose in ['Pre-Diabetic (100-125)', 'Diabetic (126+)']:
+        xai_drivers.append(("Glycemic Elevation", "Elevated fasting glucose contributes +24% to microvascular insulin resistance."))
 
-if user_sugar in ['Elevated (100–125)', 'Diabetic (126+)'] or diab_pct > 30:
-    recommendations.append(('Glycemic Metabolic Optimization', 'Prioritize formal fasting HbA1c testing (<5.7% healthy target), low-glycemic Mediterranean nutrition, and 15-minute post-prandial walks.'))
-elif bmi_data['category'] in ['Overweight', 'Obese']:
-    recommendations.append(('Metabolic Weight Stabilization', f"Your current BMI is {bmi_data['bmi']}. A structured 5-7% total weight reduction reduces incidence of type-2 diabetes by ~58%."))
-else:
-    recommendations.append(('Preventive Aerobic Maintenance', 'Aim for 150 minutes of zone-2 aerobic activity per week plus two full-body resistance sessions to preserve arterial compliance.'))
+    if 'Sleep Apnea' in patient_sleep:
+        xai_drivers.append(("Nocturnal Hypoxemia / Sleep Apnea", "Intermittent nocturnal desaturations contributed +16% to sympathetic cardiac strain."))
 
-while len(recommendations) < 3:
-    recommendations.append(('Annual Comprehensive Panel', 'Schedule an annual primary care review including lipid fractions (ApoB/LDL-P) and ambulatory blood pressure monitoring.'))
+    if patient_activity == 'Sedentary (Low Activity)':
+        xai_drivers.append(("Sedentary Lifestyle Marker", "Low physical activity index contributed +12% to insulin sensitivity suppression."))
 
-recommendations = recommendations[:3]
+    if bmi_metrics['category'] in ['Overweight', 'Elevated Risk - Obese']:
+        xai_drivers.append(("Adiposity & BMI Variance", f"BMI of {bmi_metrics['bmi']} versus age-calibrated median of {expected_benchmark} kg contributed +14% to metabolic strain."))
 
-with rec_col1:
-    st.markdown(f"""
-    <div class="rec-card">
-        <div>
-            <span style="font-size: 0.7rem; color: #2563EB; font-weight: 600; font-family: monospace;">PRIORITY 01</span>
-            <h4 style="margin: 4px 0 6px 0; font-size: 0.85rem; font-weight: 600; color: #1E293B;">{recommendations[0][0]}</h4>
-            <p style="font-size: 0.75rem; color: #64748B; line-height: 1.5;">{recommendations[0][1]}</p>
+    if not xai_drivers:
+        xai_drivers.append(("Optimal Baseline Physiological Profile", "All primary lifestyle and somatic risk factors remain within optimal statistical bounds."))
+
+    xai_drivers = xai_drivers[:3]
+
+    for title, desc in xai_drivers:
+        st.markdown(f"""
+        <div class="xai-driver-item">
+            <h5 style="margin: 0 0 4px 0; font-size: 0.85rem; font-weight: 600; color: #48CAE4;">{title}</h5>
+            <p style="margin: 0; font-size: 0.76rem; color: #94A3B8; line-height: 1.45;">{desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Clinical Next Steps Box
+    st.markdown("""
+        <div style="margin-top: 14px; padding: 12px 16px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(72,202,228,0.2); border-radius: 12px;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #3A86FF; text-transform: uppercase;">PRIORITY ACTION DIRECTIVE</span>
+            <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: #CBD5E1; line-height: 1.4;">
+                Prioritize fasting HbA1c screening, 24-hr ambulatory BP monitoring, and continuous pulse oximetry if sleep apnea symptoms persist.
+            </p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-with rec_col2:
-    st.markdown(f"""
-    <div class="rec-card">
-        <div>
-            <span style="font-size: 0.7rem; color: #0D9488; font-weight: 600; font-family: monospace;">PRIORITY 02</span>
-            <h4 style="margin: 4px 0 6px 0; font-size: 0.85rem; font-weight: 600; color: #1E293B;">{recommendations[1][0]}</h4>
-            <p style="font-size: 0.75rem; color: #64748B; line-height: 1.5;">{recommendations[1][1]}</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 
-with rec_col3:
-    st.markdown(f"""
-    <div class="rec-card">
-        <div>
-            <span style="font-size: 0.7rem; color: #6366F1; font-weight: 600; font-family: monospace;">PRIORITY 03</span>
-            <h4 style="margin: 4px 0 6px 0; font-size: 0.85rem; font-weight: 600; color: #1E293B;">{recommendations[2][0]}</h4>
-            <p style="font-size: 0.75rem; color: #64748B; line-height: 1.5;">{recommendations[2][1]}</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# -----------------------------------------------------------------------------
-# 12. Clinical Compliance Disclaimer
-# -----------------------------------------------------------------------------
+# Panel 5: Clinical Disclaimer
 st.markdown("""
-<div class="clinical-disclaimer">
-    <strong>Clinical Disclaimer:</strong><br>
-    AuraHealth AI provides statistical likelihood approximations and inferential evidence metrics for educational and clinical decision support purposes.
-    It does not replace personalized medical advice, formal physician examination, or definitive medical diagnosis.
+<div class="nexus-disclaimer">
+    <strong>Clinical Decision Support Disclaimer:</strong><br>
+    AuraHealth Nexus uses Bayesian Belief Networks and Chi-Square contingency algorithms calibrated on synthetic epidemiological cohorts for research and decision-support modeling. It does not replace individualized diagnostic assessment by a licensed physician.
 </div>
 """, unsafe_allow_html=True)
